@@ -4,12 +4,6 @@ from os.path import exists
 from setuptools import setup
 import charon
 
-#extras_require = {
-#  'spark': ['pyspark', 'toolz >= 0.7.2'],
-#  'bag': ['cloudpickle', 'toolz >= 0.7.2', 'partd >= 0.3.2'],
-#  'dataframe': ['numpy', 'pandas >= 0.16.0', 'toolz >= 0.7.2', 'partd >= 0.3.2'],
-#}
-#extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(name='charon',
       version='0.1',
@@ -22,7 +16,9 @@ setup(name='charon',
       packages=['charon'],
       long_description=(open('README.rst').read() if exists('README.rst')
                         else ''),
-      install_requires=['toolz', 'dask', 'odo'],
+      install_requires=['toolz', 'dask', 'odo', 'dask.mesos'],
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
+      dependency_links=[
+          'git+ssh://git@github.com/lensacom/dask.mesos.git#egg=dask.mesos-0.1'],
       zip_safe=False)
