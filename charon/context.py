@@ -1,6 +1,6 @@
-from dask.callbacks import Callback
-from dask import set_options
 import json
+
+from dask.callbacks import Callback
 
 
 class Persist(Callback):

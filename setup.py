@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 from os.path import exists
-from setuptools import setup
-import charon
 
+from setuptools import setup
+
+import charon
 
 setup(name='charon',
       version='0.1',

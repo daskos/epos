@@ -1,17 +1,16 @@
 from functools import wraps
-from toolz import curry
 
-from pyspark import SparkContext, SparkConf
+from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
-
-"""Decorator order matters! Spark always comes after/below mesos."""
+from toolz import curry
 
 
 @curry
 def spark(fn, name=None, coarse=False, docker='default', memory=None,
           files=[], pyfiles=[], options={}, envs={}):
+    """Decorator order matters! Spark always comes after/below mesos."""
     options.update({
-        #ensure that spark accepts 'True' instead of 'true'
+        # ensure that spark accepts 'True' instead of 'true'
         "spark.mesos.coarse": False,
         "spark.coarse.max": coarse or None,
         "spark.executor.memory": memory})
