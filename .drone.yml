@@ -1,0 +1,4 @@
+build:
+  image: ipython/scipystack
+  commands:
+    - python setup.py test
