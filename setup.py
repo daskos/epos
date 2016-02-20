@@ -21,5 +21,5 @@ setup(name='charon',
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
       dependency_links=[
-          'git+ssh://git@github.com/lensacom/dask.mesos.git#egg=dask.mesos-0.1'],
+          'git+https://github.com/lensacom/dask.mesos.git#egg=dask.mesos-0.1'],
       zip_safe=False)
