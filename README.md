@@ -1,4 +1,4 @@
-[![wercker status](https://app.wercker.com/status/3966bcdd009684129dd402f0c9ce0c13/s "wercker status")](https://app.wercker.com/project/bykey/3966bcdd009684129dd402f0c9ce0c13)
+[![Build Status](http://52.0.47.203:8000/api/badges/lensacom/charon/status.svg)](http://52.0.47.203:8000/lensacom/charon)
 
 # Charon
 
