@@ -1,15 +1,10 @@
-import pytest
-
-from kazoo.testing import KazooTestHarness
-from kazoo.recipe.lock import LockTimeout
-from charon.context import TaskLock
-from dask import get
-from time import sleep
 from operator import add
 
-def add(a, b):
-    sleep(0.5)
-    return a + b
+import pytest
+from charon.context import TaskLock
+from dask import get
+from kazoo.recipe.lock import LockTimeout
+from kazoo.testing import KazooTestHarness
 
 
 class KazooTest(KazooTestHarness):
@@ -37,6 +32,5 @@ def dsk():
 
 def test_task_lock(dsk, zk):
     with pytest.raises(LockTimeout):
-        with TaskLock(zk, timeout=0.01) as tl1, \
-             TaskLock(zk, timeout=0.02) as tl2:
-             get(dsk, 'w')
+        with TaskLock(zk, timeout=0.01), TaskLock(zk, timeout=0.02):
+            get(dsk, 'w')
