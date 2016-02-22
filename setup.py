@@ -4,8 +4,6 @@ from os.path import exists
 
 from setuptools import setup
 
-import charon
-
 setup(name='charon',
       version='0.1',
       description='DAG Task scheduler and DSL on top of Mesos',
@@ -17,7 +15,7 @@ setup(name='charon',
       packages=['charon'],
       long_description=(open('README.rst').read() if exists('README.rst')
                         else ''),
-      install_requires=['toolz', 'dask', 'odo', 'dask.mesos'],
+      install_requires=['toolz', 'dask', 'odo', 'dask.mesos', 'kazoo'],
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
       dependency_links=[
