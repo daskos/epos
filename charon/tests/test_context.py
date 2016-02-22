@@ -30,7 +30,42 @@ def dsk():
             'w': (sum, ['x', 'y', 'z'])}
 
 
-def test_task_lock(dsk, zk):
+def test_cleanup(dsk, zk):
+    with TaskLock(zk, timeout=1) as tl1:
+        get(dsk, 'w')
+    with TaskLock(zk, template='/test/{key}', timeout=1) as tl2:
+        get(dsk, 'w')
+
+    assert tl1.template == '/charon/task/{key}/lock'
+    assert tl2.template == '/test/{key}'
+    assert zk.exists('/charon/task/w/lock').data_length == 0
+    assert zk.exists('/test/w').data_length == 0
+
+
+def test_lock_raises(dsk, zk):
+    with TaskLock(zk):
+        assert get(dsk, 'w') == 6
+
     with pytest.raises(LockTimeout):
-        with TaskLock(zk, timeout=0.01), TaskLock(zk, timeout=0.02):
+        with TaskLock(zk, timeout=0.01), TaskLock(zk, timeout=0.01):
             get(dsk, 'w')
+
+    assert zk.exists('/charon/task/w/lock').data_length == 0
+
+
+def test_release_lock(dsk, zk):
+    with TaskLock(zk, timeout=0.1):
+        get(dsk, 'z')
+        get(dsk, 'w')
+        get(dsk, 'w')
+
+    assert zk.exists('/charon/task/w/lock').data_length == 0
+
+
+def test_lock_custom_path(dsk, zk):
+    with TaskLock(zk, template='/workflow/test/{key}', timeout=0.01), \
+            TaskLock(zk, template='/staging/{key}/lock', timeout=0.01):
+        get(dsk, 'w')
+
+    assert zk.exists('/workflow/test/w').data_length == 0
+    assert zk.exists('/staging/w/lock').data_length == 0
