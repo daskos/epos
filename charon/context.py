@@ -1,6 +1,9 @@
 import json
 
+import multiprocessing
+
 from dask.callbacks import Callback
+from kazoo.recipe.lock import Lock
 
 
 class Persist(Callback):
@@ -24,18 +27,33 @@ class Persist(Callback):
 
 class TaskLock(Callback):
 
-    def __init__(self, zk, blocking=True, timeout=None,
-                 *args, **kwargs):
+    def __init__(self, zk, ns='global', path='/charon/locks/{ns}/{task}',
+                 blocking=True, timeout=None, *args, **kwargs):
         self.zk = zk
-        self.locks = {}
+        self.ns = ns
+        self.path = path
         self.blocking = blocking
         self.timeout = timeout
+        self.locks = {}
+
+    def _start(self, dsk):
+        path = self.path.format(ns=self.ns, task='').rstrip('/')
+        self.zk.ensure_path(path)
 
     def _pretask(self, key, dsk, state):
-        self.locks[key] = self.zk.Lock("/dagos/locks/{}".format(key))
+        path = self.path.format(ns=self.ns, task=key)
+        self.locks[key] = Lock(self.zk, path)
         self.locks[key].acquire(blocking=self.blocking,
                                 timeout=self.timeout)
 
     def _posttask(self, key, value, dsk, state, id):
-        self.locks[key].release(key)
+        self.locks[key].release()
         del self.locks[key]
+
+    def _finish(self, dsk, state, failed):
+        for key, lock in enumerate(self.locks):
+            lock.release()
+            del self.locks[key]
+
+        path = self.path.format(ns=self.ns, task='').rstrip('/')
+        self.zk.delete(path, recursive=True)
