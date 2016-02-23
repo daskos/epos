@@ -1,8 +1,7 @@
 build:
-  image: mesoscloud/zookeeper
+  image: jplock/zookeeper
   environment:
     - ZOOKEEPER_PATH=/opt/zookeeper
   commands:
-    - yum install -y epel-release
-    - yum install -y python-pip git
+    - apk add --update python python-dev py-pip build-base
     - python setup.py test

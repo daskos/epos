@@ -1,10 +1,15 @@
-from operator import add
+from operator import add, mul
 
+import numpy as np
 import pytest
-from charon.context import TaskLock
+from charon.context import Lock, Persist
+from cloudpickle import loads
 from dask import get
+from dask.callbacks import Callback
+from kazoo.client import NoNodeError
 from kazoo.recipe.lock import LockTimeout
 from kazoo.testing import KazooTestHarness
+from numpy.testing import assert_array_equal
 
 
 class KazooTest(KazooTestHarness):
@@ -12,6 +17,15 @@ class KazooTest(KazooTestHarness):
     def __init__(self):
         self.client = None
         self._clients = []
+
+
+class Ran(Callback):
+
+    def __init__(self, *args, **kwargs):
+        self.steps = []
+
+    def _pretask(self, key, dsk, state):
+        self.steps.append(key)
 
 
 @pytest.fixture(scope="module")
@@ -23,49 +37,78 @@ def zk(request):
 
 
 @pytest.fixture(scope="module")
-def dsk():
+def dsk1():
     return {'x': 1,
             'y': 2,
             'z': (add, 'x', 'y'),
             'w': (sum, ['x', 'y', 'z'])}
 
 
-def test_cleanup(dsk, zk):
-    with TaskLock(zk, timeout=1) as tl1:
-        get(dsk, 'w')
-    with TaskLock(zk, template='/test/{key}', timeout=1) as tl2:
-        get(dsk, 'w')
-
-    assert tl1.template == '/charon/task/{key}/lock'
-    assert tl2.template == '/test/{key}'
-    assert zk.exists('/charon/task/w/lock').data_length == 0
-    assert zk.exists('/test/w').data_length == 0
+@pytest.fixture(scope="module")
+def dsk2():
+    return {'a': np.arange(10),
+            'b': 5,
+            'e': (mul, 'a', 'b'),
+            'f': (lambda a, power: a ** power, 'a', 2),
+            's': (lambda x, y: x / y, 'f', 'e'),
+            'w': (add, 'f', 's')}
 
 
-def test_lock_raises(dsk, zk):
-    with TaskLock(zk):
-        assert get(dsk, 'w') == 6
+def test_persisting(zk, dsk1):
+    with Persist(zk, name="dsk1"):
+        with Ran() as r:
+            assert get(dsk1, 'w') == 6
+            assert r.steps == ['z', 'w']
+        with Ran() as r:
+            assert get(dsk1, 'w') == 6
+            assert r.steps == []
 
+        assert loads(zk.get("/charon/dsk1/z")[0]) == 3
+        assert loads(zk.get("/charon/dsk1/w")[0]) == 6
+
+    # tests ephemeral=False, znode still exists after context handler
+    assert loads(zk.get("/charon/dsk1/w")[0]) == 6
+
+
+def test_ephemeral_persisting(zk, dsk2):
+    with Persist(zk, name="dsk2", ns="/test/dags", ephemeral=True):
+        with Ran() as r:
+            assert_array_equal(get(dsk2, 'e'), np.arange(10) * 5)
+            assert r.steps == ['e']
+        with Ran() as r:
+            assert_array_equal(get(dsk2, 's'),
+                               np.arange(10) ** 2 / (np.arange(10) * 5))
+            assert r.steps == ['f', 's']
+        with Ran() as r:
+            assert_array_equal(get(dsk2, 's'),
+                               np.arange(10) ** 2 / (np.arange(10) * 5))
+            assert r.steps == []
+
+        assert_array_equal(loads(zk.get("/test/dags/dsk2/e")[0]),
+                           np.arange(10) * 5)
+
+    with pytest.raises(NoNodeError):
+        zk.get("/test/dags/dsk2/e")
+
+
+def test_locking(zk, dsk1):
     with pytest.raises(LockTimeout):
-        with TaskLock(zk, timeout=0.01), TaskLock(zk, timeout=0.01):
-            get(dsk, 'w')
+        # two identical locks; the second cannot acquire
+        with Lock(zk, name="dsk1", timeout=1), \
+                Lock(zk, name="dsk1", timeout=1):
+            get(dsk1, 'w')
 
-    assert zk.exists('/charon/task/w/lock').data_length == 0
-
-
-def test_release_lock(dsk, zk):
-    with TaskLock(zk, timeout=0.1):
-        get(dsk, 'z')
-        get(dsk, 'w')
-        get(dsk, 'w')
-
-    assert zk.exists('/charon/task/w/lock').data_length == 0
+    # test lock release
+    with Lock(zk, name="dsk1"):
+        get(dsk1, 'w')
+        get(dsk1, 'w')
 
 
-def test_lock_custom_path(dsk, zk):
-    with TaskLock(zk, template='/workflow/test/{key}', timeout=0.01), \
-            TaskLock(zk, template='/staging/{key}/lock', timeout=0.01):
-        get(dsk, 'w')
+def test_ephemeral_locking(zk, dsk2):
+    with pytest.raises(LockTimeout):
+        with Lock(zk, name="dsk2", timeout=1, ephemeral=True), \
+                Lock(zk, name="dsk2", timeout=1, ephemeral=True):
+            get(dsk2, 'f')
 
-    assert zk.exists('/workflow/test/w').data_length == 0
-    assert zk.exists('/staging/w/lock').data_length == 0
+    with pytest.raises(NoNodeError):
+        zk.get("/charon/dsk2")
