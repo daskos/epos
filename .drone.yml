@@ -1,4 +1,8 @@
 build:
-  image: ipython/scipystack
+  image: mesoscloud/zookeeper
+  environment:
+    - ZOOKEEPER_PATH=/opt/zookeeper
   commands:
+    - yum install -y epel-release
+    - yum install -y python-pip git
     - python setup.py test
