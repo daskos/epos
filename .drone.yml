@@ -3,5 +3,5 @@ build:
   environment:
     - ZOOKEEPER_PATH=/opt/zookeeper
   commands:
-    - apk add --update python python-dev py-pip build-base openssl ca-certificates git
+    - apk add --update python python-dev python-numpy py-pip build-base openssl ca-certificates git
     - python setup.py test
