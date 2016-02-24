@@ -1,5 +1,5 @@
 import pytest
-from charon import spark
+from epos import spark
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 

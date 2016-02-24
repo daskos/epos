@@ -4,15 +4,15 @@ from os.path import exists
 
 from setuptools import setup
 
-setup(name='charon',
+setup(name='epos',
       version='0.1',
       description='DAG Task scheduler and DSL on top of Mesos',
-      url='http://github.com/lensacom/charon',
+      url='http://github.com/lensacom/epos',
       maintainer='Krisztian Szucs',
       maintainer_email='szucs.krisztian@gmail.com',
       license='BSD',
       keywords='task-scheduling parallelism mesos spark',
-      packages=['charon'],
+      packages=['epos'],
       long_description=(open('README.rst').read() if exists('README.rst')
                         else ''),
       install_requires=['toolz', 'dask', 'odo', 'dask.mesos', 'kazoo'],

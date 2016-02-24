@@ -2,10 +2,10 @@ from operator import add, mul
 
 import numpy as np
 import pytest
-from charon.context import Lock, Persist
 from cloudpickle import loads
 from dask import get
 from dask.callbacks import Callback
+from epos import Lock, Persist
 from kazoo.client import NoNodeError
 from kazoo.recipe.lock import LockTimeout
 from kazoo.testing import KazooTestHarness

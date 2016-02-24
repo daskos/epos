@@ -1,5 +1,5 @@
-from spark import spark
-from context import Lock, Persist
+from .spark import spark
+from .context import Lock, Persist
 
 __all__ = ('spark',
            'Lock',

@@ -1,6 +1,6 @@
 import pandas as pd
-from debas.imperative import mesos
-from debas.spark import spark
+from dask_mesos import mesos
+from epos import spark
 from odo import odo
 
 
