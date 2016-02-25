@@ -4,14 +4,17 @@ from __future__ import absolute_import, division, print_function
 
 import gzip
 import os
+from collections import Iterator
 from contextlib import contextmanager
 
 import bson
 from datashape import dshape
 from epos.odo.bson import BSON
 from odo import append, convert, discover, drop, odo, resource
+from odo.chunks import chunks
 from odo.temp import Temp, _Temp
 from odo.utils import tmpfile
+from toolz import first
 
 
 @contextmanager
@@ -147,3 +150,10 @@ def test_missing_to_csv():
 
     expected = 'a,b,c\n1,2.0,\n2,,4.0\n'
     assert result == expected
+
+
+def test_convert_bson_to_chunked_iterator():
+    with bson_file(dat * 10) as bf:
+        chunked = odo(bf, chunks(Iterator), chunksize=4)
+        item = first(chunked)
+        assert item == tuple(dat * 2)
