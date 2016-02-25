@@ -1,12 +1,15 @@
+from __future__ import absolute_import, division, print_function
+
 import gzip
 import os
+import uuid
 from collections import Iterator
 from contextlib import contextmanager
 
 import bson
-from bson.objectid import ObjectId
-from datashape import DataShape, Record, discover, var
-from odo import Temp, convert, discover, odo, resource
+from datashape import var
+from odo import Temp, append, convert, discover, drop, resource
+from odo.convert import ooc_types
 from toolz import take
 
 
@@ -20,19 +23,19 @@ class BSON(object):
     --------
     JSONLines - Line-delimited JSON
     """
-    canonical_extension = 'json'
+    canonical_extension = 'bson'
 
     def __init__(self, path, **kwargs):
         self.path = path
 
 
 @contextmanager
-def bson_lines(path):
+def bson_lines(path, **kwargs):
     """ Return lines of a bson-lines file
     Handles compression like gzip """
     def convert_id(lines):
         for line in lines:
-            line['_id'] = str(line['_id'])
+            line.pop("_id", None)
             yield line
 
     if path.split(os.path.extsep)[-1] == 'gz':
@@ -46,14 +49,7 @@ def bson_lines(path):
         f.close()
 
 
-# def bson_load(path, **kwargs):
-#     """ Return data of a bson file
-#     Handles compression like gzip """
-#     with bson_lines(path) as lines:
-#         return list(lines)
-
-
-@resource.register('bson://.*\.bson(\.gz)?', priority=11)
+@resource.register('(bson://)?.*\.bson(\.gz)?')
 def resource_bson(path, **kwargs):
     if 'bson://' in path:
         path = path[len('bson://'):]
@@ -80,5 +76,46 @@ def bson_to_list(b, dshape=None, **kwargs):
 
 
 @convert.register(Iterator, (BSON, Temp(BSON)))
-def bson_lines_to_iterator(b, **kwargs):
-    return bson_lines(b.path, **kwargs)
+def bson_to_iterator(b, **kwargs):
+    with bson_lines(b.path, **kwargs) as bs:
+        for line in bs:
+            yield line
+
+
+@append.register(BSON, object)
+def object_to_bson(b, o, **kwargs):
+    return append(b, convert(Iterator, o, **kwargs), **kwargs)
+
+
+@append.register(BSON, (Iterator, list))
+def iterator_to_bson(b, seq, dshape=None, **kwargs):
+    lines = (bson.BSON.encode(item) for item in seq)
+
+    # Open file
+    if b.path.split(os.path.extsep)[-1] == 'gz':
+        f = gzip.open(b.path, 'ab')
+    else:
+        f = open(b.path, 'a')
+
+    for line in lines:
+        f.write(line)
+
+    f.close()
+
+    return b
+
+
+@convert.register(Temp(BSON), list)
+def list_to_temporary_bson(data, **kwargs):
+    fn = '.%s.bson' % uuid.uuid1()
+    target = Temp(BSON)(fn)
+    return append(target, data, **kwargs)
+
+
+@drop.register(BSON)
+def drop_bson(bs):
+    if os.path.exists(bs.path):
+        os.remove(bs.path)
+
+
+ooc_types.add(BSON)
