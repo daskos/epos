@@ -15,7 +15,8 @@ setup(name='epos',
       packages=['epos'],
       long_description=(open('README.rst').read() if exists('README.rst')
                         else ''),
-      install_requires=['toolz', 'dask', 'odo', 'dask.mesos', 'kazoo'],
+      install_requires=['toolz', 'dask', 'odo',
+                        'dask.mesos', 'kazoo', 'pymongo'],
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
       dependency_links=[

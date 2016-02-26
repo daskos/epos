@@ -1,7 +1,6 @@
 build:
-  image: jplock/zookeeper
+  image: lensa/pyspark:ubuntu-pkgs-2-3-spark-1.6.0-hadoop-2.6-hdfs-client-cdh5.5.1-java-8-mesos-0.25.0-0.2.70-ubuntu-15.04
   environment:
-    - ZOOKEEPER_PATH=/opt/zookeeper
+    - ZOOKEEPER_PATH=/usr/share/java
   commands:
-    - apk add --update python python-dev python-numpy py-pip build-base openssl ca-certificates git
     - python setup.py test
