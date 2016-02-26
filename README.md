@@ -1,5 +1,5 @@
-[![Build Status](http://52.0.47.203:8000/api/badges/lensacom/charon/status.svg)](http://52.0.47.203:8000/lensacom/charon)
+[![Build Status](http://drone.lensa.com:8000/api/badges/lensacom/epos/status.svg)](http://drone.lensa.com:8000/lensacom/epos)
 
-# Charon
+# Epos
 
 DAG task scheduler for mesos.
