@@ -5,4 +5,10 @@ from odo.utils import ignoring
 from .core import Iterator
 
 with ignoring(ImportError):
-    from .bason import BSON
+    from .bson import BSON
+
+with ignoring(ImportError):
+    from .parquet import Parquet
+
+with ignoring(ImportError):
+    from .cassandra import Cassandra

@@ -1,7 +1,14 @@
+from __future__ import absolute_import, division, print_function
+
 import pandas as pd
+import pytest
 from epos.odo.parquet import Parquet, resource
 from odo import HDFS, odo
-from odo.backends.tests.conftest import sqlctx
+
+pyspark = pytest.importorskip('pyspark')
+py4j = pytest.importorskip('py4j')
+pywebhdfs = pytest.importorskip('pywebhdfs')
+
 
 data = [['Alice', 100.0, 1],
         ['Bob', 200.0, 2],
@@ -23,8 +30,19 @@ def test_hdfs_resource():
     assert tmp.path == 'foo.parquet'
 
 
-def test_convert_df_to_parquet(tmpdir):
+def test_convert_df_to_parquet_locally(sqlctx, tmpdir):
     path = str(tmpdir.join("output.parquet"))
-    print path
     sdf = odo(df, sqlctx)
-    odo(sdf, path)
+    odo(sdf, path)  # write local parquet file
+    sdf_ = sqlctx.read.parquet('file://' + path)
+
+    assert sdf_.collect() == sdf.collect()
+
+
+def test_convert_df_to_parquet_hdfs(sqlctx, tmpdir):
+    path = 'hdfs:///tmp/test.parquet'
+    sdf = odo(df, sqlctx)
+    odo(sdf, path, host='localhost', user='test')  # write parquet file to HDFS
+    sdf_ = sqlctx.read.parquet(path)
+
+    assert sdf_.collect() == sdf.collect()

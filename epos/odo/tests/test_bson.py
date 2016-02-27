@@ -5,7 +5,7 @@ import os
 from collections import Iterator
 from contextlib import contextmanager
 
-import bson
+import pytest
 from datashape import dshape
 from epos.odo.bson import BSON
 from odo import append, convert, discover, drop, odo, resource
@@ -13,6 +13,8 @@ from odo.chunks import chunks
 from odo.temp import Temp, _Temp
 from odo.utils import tmpfile
 from toolz import first
+
+bson = pytest.importorskip('bson')
 
 
 @contextmanager
