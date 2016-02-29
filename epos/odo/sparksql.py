@@ -24,12 +24,14 @@ except ImportError:
 else:
     @append.register(SQLContext, HDFS(Parquet))
     def hdfs_parquet_to_sparksql_dataframe(ctx, p, dshape=None, **kwargs):
-        path = 'hdfs://{host}/{path}'.format(host=p.hdfs.host,
-                                             path=p.path.lstrip('/'))
+        path = 'hdfs://{user}@{host}/{path}'.format(user=p.hdfs.user_name,
+                                                    host=p.hdfs.host,
+                                                    path=p.path.lstrip('/'))
         return ctx.read.parquet(path)
 
     @append.register(HDFS(Parquet), SparkDataFrame)
     def sparksql_dataframe_to_hdfs_parquet(p, df, dshape=None, **kwargs):
-        path = 'hdfs://{host}/{path}'.format(host=p.hdfs.host,
-                                             path=p.path.lstrip('/'))
+        path = 'hdfs://{user}@{host}/{path}'.format(user=p.hdfs.user_name,
+                                                    host=p.hdfs.host,
+                                                    path=p.path.lstrip('/'))
         return df.write.parquet(path)

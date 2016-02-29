@@ -1,16 +1,17 @@
 compose:
    hdfs:
-    image: sequenceiq/hadoop-docker
-   cassandra:
-     image: cassandra
+    image: chalimartines/cdh5-pseudo-distributed
+   #cassandra:
+   #  image: cassandra
 
 
 build:
   image: lensa/pyspark:ubuntu-pkgs-2-3-spark-1.6.0-hadoop-2.6-hdfs-client-cdh5.5.1-java-8-mesos-0.25.0-0.2.70-ubuntu-15.04
   environment:
     - ZOOKEEPER_PATH=/usr/share/java
-    - HDFS_TEST_HOST=127.0.0.1
+    - HDFS_TEST_HOST=localhost
   commands:
-    - hdfs dfs -ls /tmp
+    - sleep 5
+    - hdfs dfs -ls hdfs://localhost/
     - python setup.py test
     #- hdfs dfs -ls /tmp

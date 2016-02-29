@@ -44,7 +44,7 @@ def test_append_sparkdf_to_parquet(sqlctx, sdf):
         res = odo(sdf, Parquet(path))  # write local parquet file
         sdf_ = sqlctx.read.parquet(local_path)
 
-        assert os.path.exists(fn)
+        assert os.path.exists(path)
         assert sdf_.collect() == sdf.collect()
 
 
