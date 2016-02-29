@@ -5,7 +5,6 @@ class Parquet(object):
     canonical_extension = 'parquet'
 
     def __init__(self, path, **kwargs):
-        print "PARQUET {}".format(path)
         self.path = path
 
 

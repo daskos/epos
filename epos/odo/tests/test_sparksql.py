@@ -45,7 +45,7 @@ def test_append_sparkdf_to_parquet(sqlctx, sdf):
         sdf_ = sqlctx.read.parquet(local_path)
 
         assert os.path.exists(path)
-        assert sdf_.collect() == sdf.collect()
+        assert set(sdf_.collect()) == set(sdf.collect())
 
 
 def test_append_sparkdf_to_parquet_hdfs(sqlctx, hdfs, sdf):
@@ -56,4 +56,4 @@ def test_append_sparkdf_to_parquet_hdfs(sqlctx, hdfs, sdf):
     # write parquet file to HDFS
     res = odo(sdf, HDFS(Parquet)(path, hdfs=hdfs))
     sdf_ = sqlctx.read.parquet(hdfs_path)
-    assert sdf_.collect() == sdf.collect()
+    assert set(sdf_.collect()) == set(sdf.collect())

@@ -14,4 +14,3 @@ build:
     - sleep 5
     - hdfs dfs -ls hdfs://localhost/
     - python setup.py test
-    #- hdfs dfs -ls /tmp

@@ -10,7 +10,8 @@ with ignoring(ImportError):
 with ignoring(ImportError):
     from .parquet import Parquet
 
-from .sparksql import SQLContext
+with ignoring(ImportError):
+    from .sparksql import SQLContext
 
 with ignoring(ImportError):
     from .cassandra import Cassandra
