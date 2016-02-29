@@ -21,8 +21,8 @@
     - id: flake8
       exclude: docs/conf.py
       args: [--max-line-length=80]
-- repo: https://github.com/FalconSocial/pre-commit-python-sorter
-  sha: HEAD
-  hooks:
-    - id: python-import-sorter
-      args: ['--silent-overwrite']
+#- repo: https://github.com/FalconSocial/pre-commit-python-sorter
+#  sha: HEAD
+#  hooks:
+#    - id: python-import-sorter
+#      args: ['--silent-overwrite']

@@ -41,7 +41,8 @@ setup(name='epos',
       install_requires=['toolz', 'dask', 'odo',
                         'dask.mesos'],
       cmdclass={'test': PyTest},
-      tests_require=['pytest', 'pywebhdfs', 'pymongo', 'kazoo'],
+      tests_require=['pytest', 'pywebhdfs', 'pymongo',
+                     'kazoo', 'sqlalchemy', 'paramiko'],
       dependency_links=[
           'git+https://github.com/lensacom/dask.mesos.git#egg=dask.mesos-0.1'],
       zip_safe=False)
