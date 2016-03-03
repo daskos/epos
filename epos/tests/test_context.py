@@ -8,15 +8,7 @@ from dask.callbacks import Callback
 from epos import Lock, Persist
 from kazoo.client import NoNodeError
 from kazoo.recipe.lock import LockTimeout
-from kazoo.testing import KazooTestHarness
 from numpy.testing import assert_array_equal
-
-
-class KazooTest(KazooTestHarness):
-
-    def __init__(self):
-        self.client = None
-        self._clients = []
 
 
 class Ran(Callback):
@@ -26,14 +18,6 @@ class Ran(Callback):
 
     def _pretask(self, key, dsk, state):
         self.steps.append(key)
-
-
-@pytest.fixture(scope="module")
-def zk(request):
-    zk = KazooTest()
-    zk.setup_zookeeper()
-    request.addfinalizer(zk.teardown_zookeeper)
-    return zk.client
 
 
 @pytest.fixture(scope="module")

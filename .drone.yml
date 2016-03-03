@@ -1,16 +1,22 @@
 compose:
+   zookeeper:
+     image: jplock/zookeeper
    hdfs:
-    image: chalimartines/cdh5-pseudo-distributed
+     image: chalimartines/cdh5-pseudo-distributed
+   marathon:
+     image: mesosphere/marathon
+     command: [--master, "local", --zk, "zk://localhost:2181/marathon"]
+   chronos:
+     image: mesosphere/chronos
    #cassandra:
    #  image: cassandra
-
 
 build:
   image: lensa/pyspark:ubuntu-pkgs-2-3-spark-1.6.0-hdfs-client-cdh5.5.1-java-8-mesos-0.25.0-0.2.70-ubuntu-15.04
   environment:
     - ZOOKEEPER_PATH=/usr/share/java
-    - HDFS_TEST_HOST=localhost
+    - ZOOKEEPER_HOST=localhost
+    - HDFS_HOST=localhost
   commands:
     - sleep 5
-    - hdfs dfs -ls hdfs://localhost/
     - python setup.py test
