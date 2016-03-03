@@ -26,6 +26,13 @@ def sdf(sc):
     return rdd.toDF()
 
 
+@pytest.fixture(scope='module')
+def sdfc(sc):
+    d = [{'a': 1, 'b': 2}, {'a': 2, 'b': 3}]
+    rdd = sc.parallelize(d, 2)
+    return rdd.toDF()
+
+
 # @pytest.yield_fixture
 # def tmpdir_hdfs(hdfs, ext=''):
 #     fn = '/tmp/' + str(uuid.uuid1())
@@ -57,3 +64,10 @@ def test_append_sparkdf_to_parquet_hdfs(sqlctx, hdfs, sdf):
     res = odo(sdf, HDFS(Parquet)(path, hdfs=hdfs))
     sdf_ = sqlctx.read.parquet(hdfs_path)
     assert set(sdf_.collect()) == set(sdf.collect())
+
+
+def test_append_sparksql_dataframe_to_cassandra(sqlctx, sdfc, cass):
+    path = 'cql://localhost:9160/testks::testtable'
+    odo(sdfc, path)
+    res = odo(path, sqlctx)
+    assert res.collect() == sdfc.collect()

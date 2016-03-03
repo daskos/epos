@@ -10,7 +10,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ['-v']
+        self.test_args = ['-v', '-s', 'epos/odo/tests/test_sparksql.py']
         self.test_suite = True
 
     def run_tests(self):
@@ -42,7 +42,7 @@ setup(name='epos',
                         'dask.mesos'],
       cmdclass={'test': PyTest},
       tests_require=['pytest', 'pywebhdfs', 'pymongo',
-                     'kazoo', 'sqlalchemy', 'paramiko'],
+                     'kazoo', 'sqlalchemy', 'paramiko', 'cassandra-driver'],
       dependency_links=[
           'git+https://github.com/lensacom/dask.mesos.git#egg=dask.mesos-0.1'],
       zip_safe=False)

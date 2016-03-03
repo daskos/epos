@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SQLContext
 
-from odo import convert, append
+from odo import append
 from .parquet import Parquet
+from .cassandra import Cassandra
 
 
 @append.register(Parquet, SparkDataFrame)
@@ -35,3 +36,20 @@ else:
                                                     host=p.hdfs.host,
                                                     path=p.path.lstrip('/'))
         return df.write.parquet(path)
+
+
+@append.register(Cassandra, SparkDataFrame)
+def sparksql_dataframe_to_cassandra(c, df, dshape=None, **kwargs):
+    (df.write
+     .format("org.apache.spark.sql.cassandra")
+     .options(table=c.table, keyspace=c.keyspace)
+     .save(mode="append"))
+    return c
+
+
+@append.register(SQLContext, Cassandra)
+def cassandra_to_sparksql_dataframe(ctx, c, dshape=None, **kwargs):
+    return (ctx.read
+            .format("org.apache.spark.sql.cassandra")
+            .options(table=c.table, keyspace=c.keyspace)
+            .load())

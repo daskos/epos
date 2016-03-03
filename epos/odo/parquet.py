@@ -1,4 +1,4 @@
-from odo import append, resource
+from odo import resource
 
 
 class Parquet(object):

@@ -67,3 +67,4 @@ target/
 
 # pyenv
 .python-version
+metastore_db/
