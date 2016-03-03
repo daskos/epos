@@ -57,7 +57,6 @@ def cass(sc):
     pytest.importorskip('cassandra')
     from cassandra.cluster import Cluster
 
-    # c = Cluster(cassandra_host.split(','), port=cassandra_port).connect()
     c = Cluster(cassandra_host.split(','), port=int(cassandra_port)).connect()
     c.execute("CREATE KEYSPACE testks WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}")
     c.set_keyspace('testks')

@@ -1,15 +1,13 @@
 compose:
-   zookeeper:
-     image: jplock/zookeeper
-   hdfs:
-     image: chalimartines/cdh5-pseudo-distributed
-   marathon:
-     image: mesosphere/marathon
-     command: [--master, "local", --zk, "zk://localhost:2181/marathon"]
-   chronos:
-     image: mesosphere/chronos
-   #cassandra:
-   #  image: cassandra
+  zookeeper:
+    image: jplock/zookeeper
+  hdfs:
+    image: chalimartines/cdh5-pseudo-distributed
+  marathon:
+    image: mesosphere/marathon
+    command: [--master, "local", --zk, "zk://localhost:2181/marathon"]
+  chronos:
+    image: mesosphere/chronos
   cassandra:
     image: cassandra:3.2
     environment:
