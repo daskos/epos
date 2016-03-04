@@ -19,6 +19,9 @@ sys.path[:0] = [spark_python, py4j]
 @pytest.yield_fixture(scope='module')
 def zk():
     pytest.importorskip('kazoo')
+    pytestmark = pytest.mark.skipif(zookeeper_host is None,
+                                    reason='No ZOOKEEPER_HOST envar defined')
+
     from kazoo.client import KazooClient
     zk = KazooClient(hosts=zookeeper_host)
     try:
@@ -31,6 +34,9 @@ def zk():
 @pytest.yield_fixture(scope='module')
 def sc():
     pytest.importorskip('pyspark')
+    pytestmark = pytest.mark.skipif(spark_home is None,
+                                    reason='No SPARK_HOME envar defined')
+
     from pyspark import SparkContext, SparkConf
 
     conf = SparkConf()
@@ -58,7 +64,8 @@ def cass(sc):
     from cassandra.cluster import Cluster
 
     c = Cluster(cassandra_host.split(','), port=int(cassandra_port)).connect()
-    c.execute("CREATE KEYSPACE testks WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}")
+    c.execute(
+        "CREATE KEYSPACE testks WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}")
     c.set_keyspace('testks')
     c.execute("CREATE TABLE testtable (a int, b int, PRIMARY KEY (a, b))")
     return cass
@@ -68,7 +75,7 @@ def cass(sc):
 def hdfs():
     pywebhdfs = pytest.importorskip('pywebhdfs')
     pytestmark = pytest.mark.skipif(hdfs_host is None,
-                                    reason='No HDFS_TEST_HOST envar defined')
+                                    reason='No HDFS_HOST envar defined')
 
     from pywebhdfs.webhdfs import PyWebHdfsClient
     return PyWebHdfsClient(host=hdfs_host, user_name='hdfs')

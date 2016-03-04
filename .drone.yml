@@ -19,12 +19,12 @@ build:
   image: lensa/pyspark:ubuntu-pkgs-2-3-spark-1.6.0-hdfs-client-cdh5.5.1-java-8-mesos-0.25.0-0.2.70-ubuntu-15.04
   environment:
     - ZOOKEEPER_PATH=/usr/share/java
-    - ZOOKEEPER_HOST=localhost
-    - HDFS_HOST=localhost
     - CASSANDRA_TEST_HOST=127.0.0.1
     - CASSANDRA_TEST_PORT=9042
+    - ZOOKEEPER_HOST=localhost:2181
+    - MARATHON_HOST=localhost:8080
+    - HDFS_HOST=localhost:8020
   commands:
     - sleep 5
-    - hdfs dfs -ls hdfs://localhost/
     - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M1-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
     - python setup.py test
