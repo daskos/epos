@@ -33,8 +33,10 @@ def test_execution():
 
 def test_bash_execution():
     callback = dumps(add, args=[1, 2])
+    env = {'PYTHONPATH': '.:.eggs/cloudpickle-0.2.1-py2.7.egg:'}
     cmd = ['python', '-m', 'epos.execute', callback]
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=env)
     stdout, stderr = p.communicate()
-
+    print stdout
+    print stderr
     assert stdout.strip() == str(3)

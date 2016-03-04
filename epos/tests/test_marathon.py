@@ -12,12 +12,12 @@ import_path = '{dd}:{dd}/.eggs/cloudpickle-0.2.1-py2.7.egg'.format(
     dd=drone_dir)
 
 
-# @pytest.yield_fixture(autouse=True)
-# def marathon_cleanup():
-#     try:
-#         yield
-#     finally:
-#         destroy(id='test')
+@pytest.yield_fixture(autouse=True)
+def marathon_cleanup():
+    try:
+        yield
+    finally:
+        destroy(id='test')
 
 
 def test_marathon_start():
@@ -33,5 +33,3 @@ def test_marathon_start():
 
     result = app(id='test')
     assert result['app']['tasksRunning'] == 1
-
-    destroy(id='test')
