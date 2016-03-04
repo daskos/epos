@@ -16,7 +16,7 @@ py4j = glob.glob(os.path.join(spark_python, 'lib', 'py4j-*.zip'))[0]
 sys.path[:0] = [spark_python, py4j]
 
 
-@pytest.yield_fixture(scope='module')
+@pytest.yield_fixture
 def zk():
     pytest.importorskip('kazoo')
     pytestmark = pytest.mark.skipif(zookeeper_host is None,
@@ -28,6 +28,7 @@ def zk():
         zk.start()
         yield zk
     finally:
+        zk.delete('/epos', recursive=True)
         zk.stop()
 
 

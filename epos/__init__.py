@@ -1,24 +1,18 @@
-try:
-    from .spark import spark
+from __future__ import absolute_import, division, print_function
+
+from contextlib import contextmanager
+
+
+@contextmanager
+def ignoring(*exceptions):
+    try:
+        yield
+    except exceptions:
+        pass
+
+
+with ignoring(ImportError):
     from .context import Lock, Persist
-except:
-    pass
 
-__all__ = ('spark',
-           'Lock',
-           'Persist')
-
-
-import threading
-
-
-def daemon(f):
-    '''
-    a threading decorator
-    use @background above the function you want to run in the background
-    '''
-    def bg_f(*a, **kw):
-        thread = threading.Thread(target=f, args=a, kwargs=kw)
-        thread.daemon = True
-        thread.start()
-    return bg_f
+with ignoring(ImportError):
+    from .spark import spark

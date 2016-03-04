@@ -5,7 +5,7 @@ import pytest
 from cloudpickle import loads
 from dask import get
 from dask.callbacks import Callback
-from epos import Lock, Persist
+from epos.context import Lock, Persist
 from kazoo.client import NoNodeError
 from kazoo.recipe.lock import LockTimeout
 from numpy.testing import assert_array_equal

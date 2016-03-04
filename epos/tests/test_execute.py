@@ -1,6 +1,6 @@
 import pytest
 from epos.execute import loads, dumps, run
-import subprocess
+from subprocess import Popen, PIPE
 from operator import add
 
 
@@ -33,6 +33,8 @@ def test_execution():
 
 def test_bash_execution():
     callback = dumps(add, args=[1, 2])
-    cmd = 'python -m epos.execute {}'.format(callback)
-    print subprocess.call(cmd)
-    print cmd
+    cmd = ['python', '-m', 'epos.execute', callback]
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+
+    assert stdout.strip() == str(3)
