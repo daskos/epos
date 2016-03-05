@@ -8,6 +8,7 @@ compose:
     command: [--master, "local", --zk, "zk://localhost:2181/marathon"]
   chronos:
     image: mesosphere/chronos
+    command: ["/usr/bin/chronos", "run_jar", "--http_port", "4400"]
   cassandra:
     image: cassandra:3.2
     environment:
@@ -23,6 +24,7 @@ build:
     - CASSANDRA_TEST_PORT=9042
     - ZOOKEEPER_HOST=localhost:2181
     - MARATHON_HOST=localhost:8080
+    - CHRONOS_HOST=localhost:4400
     - HDFS_HOST=localhost:8020
   commands:
     - sleep 5
