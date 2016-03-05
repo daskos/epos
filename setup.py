@@ -10,7 +10,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ['-sv', 'epos/tests/test_chronos.py']
+        self.test_args = ['-v']
         self.test_suite = True
 
     def run_tests(self):

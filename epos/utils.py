@@ -10,7 +10,6 @@ def http_endpoint(host, resource, method=requests.get, **params):
 
     @wraps(method)
     def wrapper(payload={}, **params):
-        print(payload)
         url = endpoint.format(**params)
         response = method(url, json=payload)
         response.raise_for_status()
