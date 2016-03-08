@@ -5,7 +5,7 @@ from functools import wraps
 import os
 import requests
 from toolz import curry
-from .execute import loads, dumps
+from .execute import dumps, command
 from .utils import http_endpoint
 
 
@@ -31,12 +31,12 @@ def chronos(fn, name=None, cpus=1, mem=512, image='python',
         payload['parents'] = parents
 
     if image:
-        payload['container'] = {'type': 'DOCKER', 'image': image, 'forcePullImage': True}
+        payload['container'] = {'type': 'DOCKER',
+                                'image': image, 'forcePullImage': True}
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        callback = dumps(fn, args, kwargs)
-        payload['command'] = 'python -m epos.execute {}'.format(callback)
+        payload['command'] = command(fn, args, kwargs, path=path)
         return schedule_job(payload=payload)
 
     return wrapper
