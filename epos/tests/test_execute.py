@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
-from epos.execute import loads, dumps, run, bash
-from subprocess import Popen, PIPE
+from epos.execute import loads, dumps, run, command
+import subprocess
 from operator import add
 
 
@@ -37,9 +37,8 @@ def test_bash_execution():
     def print_add(a, b):
         print(a + b)
 
-    callback = dumps(print_add, args=[1, 2])
-    env = {'PYTHONPATH': '.:.eggs/cloudpickle-0.2.1-py2.7.egg:'}
-    cmd = ['python', '-c', bash, callback]
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE, env=env)
-    stdout, stderr = p.communicate()
+    cmd = command(print_add, args=[1, 2], kwargs={},
+                  path='.eggs/cloudpickle-0.2.1-py2.7.egg')
+
+    stdout = subprocess.check_output(cmd, shell=True)
     assert stdout.strip() == str(3)
