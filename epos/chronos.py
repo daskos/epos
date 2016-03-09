@@ -22,8 +22,9 @@ destroy = endpoint(resource='/task/kill/{name}', method=requests.delete)
 
 @curry
 def chronos(fn, name=None, cpus=1, mem=512, image='python',
-            schedule=None, parents=[]):
-    payload = {'name': fn.__name__, 'cpus': cpus, 'mem': mem}
+            schedule=None, parents=[], path='$PYTHONPATH'):
+    payload = {'name': fn.__name__, 'cpus': str(cpus), 'mem': str(mem),
+               'owner': 'shit@shit.shit', 'disabled': False}
 
     if schedule:
         payload['schedule'] = schedule

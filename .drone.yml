@@ -8,9 +8,6 @@ compose:
     command: ["--zk=zk://localhost:2181/mesos", "--registry=in_memory"]
   mesos-slave:
     image: mesosphere/mesos-slave-dind:0.2.4_mesos-0.26.0_docker-1.8.2_ubuntu-14.04.3
-    volumes:
-      #- /var/run/docker.sock:/var/run/docker.sock
-      #- /tmp/mesos:/tmp/mesos
     environment:
       - MESOS_CONTAINERIZERS=docker,mesos
       - MESOS_MASTER=zk://localhost:2181/mesos
@@ -19,8 +16,8 @@ compose:
     image: mesosphere/marathon
     command: [--master, "zk://localhost:2181/mesos", --zk, "zk://localhost:2181/marathon"]
   chronos:
-    image: mesosphere/chronos
-    command: ["/usr/bin/chronos", "run_jar", "--http_port", "4400"]
+    image: mesosphere/chronos:chronos-2.4.0-0.1.20151007110204.ubuntu1404-mesos-0.25.0-0.2.70.ubuntu1404
+    command: ["/usr/bin/chronos", --http_port, "4400", --master, "zk://localhost:2181/mesos", --zk_hosts, "localhost:2181"]
   cassandra:
     image: cassandra:3.2
     environment:
