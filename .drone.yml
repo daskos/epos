@@ -27,7 +27,6 @@ compose:
 
 build:
   image: lensa/pyspark:ubuntu-pkgs-2-3-spark-1.6.0-hdfs-client-cdh5.5.1-java-8-mesos-0.25.0-0.2.70-ubuntu-15.04
-  privileged: true
   environment:
     - ZOOKEEPER_PATH=/usr/share/java
     - CASSANDRA_TEST_HOST=127.0.0.1
