@@ -3,12 +3,11 @@ from __future__ import absolute_import, division, print_function
 import os
 import requests
 
-from copy import copy
 from functools import wraps
 from toolz import curry
 
-from .utils import http_endpoint
-from .execute import command, dumps
+from .utils import http_endpoint, envargs
+from .execute import command
 
 
 default_host = os.environ.get('MARATHON_HOST')
@@ -36,7 +35,8 @@ def _parse_volumes(vols):
 
 
 @curry
-def marathon(fn, name=None, cpus=1, mem=512, instances=1, image='python',
+@envargs(prefix='EPOS_MARATHON_')
+def marathon(fn, name=None, cpus=0.1, mem=128, instances=1, image='python',
              path='$PYTHONPATH', envs={}, uris=[], volumes=[],
              host=default_host):
     payload = {

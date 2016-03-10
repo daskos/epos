@@ -1,8 +1,6 @@
 import glob
 import os
-import shutil
 import sys
-
 import pytest
 
 
@@ -42,7 +40,7 @@ def sc():
 
     conf = SparkConf()
     conf.setAppName('epos-tests')
-    conf.setMaster('local[*]')
+    conf.setMaster('local[2]')
     conf.set('spark.cassandra.connection.host', cassandra_host)
     conf.set('spark.cassandra.connection.port', cassandra_port)
 
@@ -65,8 +63,8 @@ def cass(sc):
     from cassandra.cluster import Cluster
 
     c = Cluster(cassandra_host.split(','), port=int(cassandra_port)).connect()
-    c.execute(
-        "CREATE KEYSPACE testks WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}")
+    c.execute("CREATE KEYSPACE testks WITH REPLICATION = "
+              "{'class': 'SimpleStrategy', 'replication_factor': 1}")
     c.set_keyspace('testks')
     c.execute("CREATE TABLE testtable (a int, b int, PRIMARY KEY (a, b))")
     return cass

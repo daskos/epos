@@ -1,10 +1,7 @@
 from __future__ import print_function, absolute_import, division
 
-import os
 import pytest
-from requests import HTTPError
-from epos.marathon import marathon, destroy, deployments, app
-from epos.execute import loads, dumps, run
+from epos.marathon import marathon, destroy, deployments, app, apps
 from time import sleep
 
 # TODO skip if not hdfs
@@ -12,6 +9,15 @@ from time import sleep
 
 uris = ['https://github.com/cloudpipe/cloudpickle/archive/v0.2.1.tar.gz']
 pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
+
+
+@pytest.fixture(scope='module', autouse=True)
+def destroy_apps():
+    for a in apps()['apps']:
+        destroy(id=a['id'])
+
+    while len(deployments()):
+        sleep(.5)
 
 
 def test_marathon_start():
@@ -22,7 +28,7 @@ def test_marathon_start():
             print('Slept 5s')
 
     try:
-        response = test(1, 2)
+        test(1, 2)
         while len(deployments()):
             sleep(.5)
 
@@ -30,6 +36,8 @@ def test_marathon_start():
         assert result['app']['tasksRunning'] == 1
     finally:
         destroy(id='test')
+
+    assert len(apps()['apps']) == 0
 
 
 def test_marathon_docker_start():
@@ -40,7 +48,7 @@ def test_marathon_docker_start():
             print('Slept 5s')
 
     try:
-        response = docker(1, 2)
+        docker(1, 2)
         while len(deployments()):
             sleep(.5)
 
@@ -48,3 +56,5 @@ def test_marathon_docker_start():
         assert result['app']['tasksRunning'] == 1
     finally:
         destroy(id='docker')
+
+    assert len(apps()['apps']) == 0

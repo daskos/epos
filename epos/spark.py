@@ -5,8 +5,11 @@ from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
 from toolz import curry
 
+from .utils import envargs
+
 
 @curry
+@envargs(prefix='EPOS_SPARK_')
 def spark(fn, name=None, coarse=False, docker=None, memory=None, role=None,
           files=[], pyfiles=[], options={}, envs={}, uris=[], constraints=[],
           log='ERROR'):

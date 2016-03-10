@@ -5,8 +5,8 @@ from functools import wraps
 import os
 import requests
 from toolz import curry
-from .execute import dumps, command
-from .utils import http_endpoint
+from .execute import command
+from .utils import http_endpoint, envargs
 
 
 default_host = os.environ.get('CHRONOS_HOST')
@@ -21,7 +21,8 @@ destroy = endpoint(resource='/job/{name}', method=requests.delete)
 
 
 @curry
-def chronos(fn, name=None, cpus=1, mem=512, image='python',
+@envargs(prefix='EPOS_CHRONOS_')
+def chronos(fn, name=None, cpus=0.1, mem=128, image='python',
             schedule=None, parents=[], path='$PYTHONPATH', uris=[]):
     payload = {'name': fn.__name__, 'cpus': str(cpus), 'mem': str(mem),
                'disabled': False, 'uris': uris}

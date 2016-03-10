@@ -1,5 +1,6 @@
 from __future__ import print_function, absolute_import, division
 
+import pytest
 from epos.chronos import chronos, start, destroy, jobs
 from time import sleep
 
@@ -10,21 +11,31 @@ uris = ['https://github.com/cloudpipe/cloudpickle/archive/v0.2.1.tar.gz']
 pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
 
 
+@pytest.fixture(scope='module', autouse=True)
+def destroy_jobss():
+    print(jobs())
+    for job in jobs():
+        destroy(name=job['name'])
+
+
 def test_chronos_start():
-    @chronos(image='python:2-alpine', schedule='R/2015-01-01T20:00Z/PT1M',
-             cpus=0.1, mem=512, uris=uris, path=pythonpath)
+    @chronos(schedule='R/2015-01-01T20:00Z/PT1M', image='python:2-alpine',
+             uris=uris, path=pythonpath)
     def test(a, b):
-        print('Sleeping or 5s')
-        sleep(5)
-        print('Slept 5s')
+        print('Sleeping or 2s')
+        sleep(2)
+        print('Slept 2s')
 
-    test(1, 2)  # add job
-    assert jobs()[0]['name'] == 'test'
+    try:
+        test(1, 2)  # add job
+        assert jobs()[0]['name'] == 'test'
 
-    start(name='test')
-    while not jobs()[0]['successCount']:
-        sleep(.5)
-    assert jobs()[0]['successCount'] == 1
+        start(name='test')
+        while not jobs()[0]['successCount']:
+            sleep(.5)
 
-    destroy(name='test')
+        assert jobs()[0]['successCount'] == 1
+    finally:
+        destroy(name='test')
+
     assert len(jobs()) == 0
