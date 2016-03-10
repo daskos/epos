@@ -77,7 +77,6 @@ def bson_to_list(b, dshape=None, **kwargs):
 
 @convert.register(Iterator, (BSON, Temp(BSON)))
 def bson_to_iterator(b, **kwargs):
-    print("BSON-to-Iterator")
     with bson_lines(b.path, **kwargs) as bs:
         for line in bs:
             yield line

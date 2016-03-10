@@ -5,18 +5,10 @@ import pytest
 from cloudpickle import loads
 from dask import get
 from dask.callbacks import Callback
-from epos import Lock, Persist
+from epos.context import Lock, Persist
 from kazoo.client import NoNodeError
 from kazoo.recipe.lock import LockTimeout
-from kazoo.testing import KazooTestHarness
 from numpy.testing import assert_array_equal
-
-
-class KazooTest(KazooTestHarness):
-
-    def __init__(self):
-        self.client = None
-        self._clients = []
 
 
 class Ran(Callback):
@@ -26,14 +18,6 @@ class Ran(Callback):
 
     def _pretask(self, key, dsk, state):
         self.steps.append(key)
-
-
-@pytest.fixture(scope="module")
-def zk(request):
-    zk = KazooTest()
-    zk.setup_zookeeper()
-    request.addfinalizer(zk.teardown_zookeeper)
-    return zk.client
 
 
 @pytest.fixture(scope="module")
@@ -63,11 +47,11 @@ def test_persisting(zk, dsk1):
             assert get(dsk1, 'w') == 6
             assert r.steps == []
 
-        assert loads(zk.get("/charon/dsk1/z")[0]) == 3
-        assert loads(zk.get("/charon/dsk1/w")[0]) == 6
+        assert loads(zk.get("/epos/dsk1/z")[0]) == 3
+        assert loads(zk.get("/epos/dsk1/w")[0]) == 6
 
     # tests ephemeral=False, znode still exists after context handler
-    assert loads(zk.get("/charon/dsk1/w")[0]) == 6
+    assert loads(zk.get("/epos/dsk1/w")[0]) == 6
 
 
 def test_ephemeral_persisting(zk, dsk2):
@@ -111,4 +95,4 @@ def test_ephemeral_locking(zk, dsk2):
             get(dsk2, 'f')
 
     with pytest.raises(NoNodeError):
-        zk.get("/charon/dsk2")
+        zk.get("/epos/dsk2")

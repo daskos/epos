@@ -1,11 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
+import pytest
+
+bson = pytest.importorskip('bson')
+
 import gzip
 import os
 from collections import Iterator
 from contextlib import contextmanager
 
-import bson
 from datashape import dshape
 from epos.odo.bson import BSON
 from odo import append, convert, discover, drop, odo, resource
@@ -35,7 +38,7 @@ def test_discover_bson():
 
 
 def test_resource():
-    with tmpfile('bson') as fn:
+    with tmpfile('.bson') as fn:
         assert isinstance(resource('bson://' + fn), BSON)
         assert isinstance(
             resource(fn, expected_dshape=dshape('var * {a: int}')),
@@ -48,7 +51,7 @@ def test_resource_guessing():
 
 
 def test_append_bson():
-    with tmpfile('bson') as fn:
+    with tmpfile('.bson') as fn:
         b = BSON(fn)
         append(b, dat)
         assert convert(list, b) == dat
@@ -94,7 +97,7 @@ def test_convert_bson_list():
 
 
 def test_read_gzip():
-    with tmpfile('bson.gz') as fn:
+    with tmpfile('.bson.gz') as fn:
         f = gzip.open(fn, 'wb')
         for item in dat:
             f.write(bson.BSON.encode(item))
@@ -104,7 +107,7 @@ def test_read_gzip():
 
 
 def test_write_gzip():
-    with tmpfile('bson.gz') as fn:
+    with tmpfile('.bson.gz') as fn:
         b = BSON(fn)
         append(b, dat)
 
@@ -112,7 +115,7 @@ def test_write_gzip():
 
 
 def test_resource_gzip():
-    with tmpfile('bson.gz') as fn:
+    with tmpfile('.bson.gz') as fn:
         assert isinstance(resource(fn), BSON)
         assert isinstance(resource('bson://' + fn), BSON)
 
@@ -126,7 +129,7 @@ def test_convert_to_temp_bson():
 
 
 def test_drop():
-    with tmpfile('bson') as fn:
+    with tmpfile('.bson') as fn:
         bs = BSON(fn)
         append(bs, dat)
 

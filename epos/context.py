@@ -8,7 +8,7 @@ from kazoo.recipe.lock import Lock as ZkLock
 
 class ZookeeperBase(Callback):
 
-    def __init__(self, zk, name, ns='/charon', ephemeral=False):
+    def __init__(self, zk, name, ns='/epos', ephemeral=False):
         self.zk = zk
         self.ephemeral = ephemeral
 
@@ -51,7 +51,7 @@ class Persist(ZookeeperBase):
 
 class Lock(ZookeeperBase):
 
-    def __init__(self, zk, name, ns='/charon', ephemeral=False,
+    def __init__(self, zk, name, ns='/epos', ephemeral=False,
                  blocking=True, timeout=None):
         super(Lock, self).__init__(
             zk=zk, name=name, ns=ns, ephemeral=ephemeral)

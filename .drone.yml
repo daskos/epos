@@ -1,6 +1,40 @@
+compose:
+  zookeeper:
+    image: jplock/zookeeper
+  hdfs:
+    image: chalimartines/cdh5-pseudo-distributed
+  mesos-master:
+    image: mesosphere/mesos-master:0.26.0-0.2.145.ubuntu1404
+    command: ["--zk=zk://localhost:2181/mesos", "--registry=in_memory"]
+  mesos-slave:
+    image: mesosphere/mesos-slave-dind:0.2.4_mesos-0.26.0_docker-1.8.2_ubuntu-14.04.3
+    environment:
+      - MESOS_CONTAINERIZERS=docker,mesos
+      - MESOS_MASTER=zk://localhost:2181/mesos
+    privileged: true
+  marathon:
+    image: mesosphere/marathon
+    command: [--master, "zk://localhost:2181/mesos", --zk, "zk://localhost:2181/marathon"]
+  chronos:
+    image: mesosphere/chronos:chronos-2.4.0-0.1.20151007110204.ubuntu1404-mesos-0.26.0-0.2.145.ubuntu1404
+    command: ["/usr/bin/chronos", --http_port, "4400", --master, "zk://localhost:2181/mesos", --zk_hosts, "localhost:2181"]
+  cassandra:
+    image: cassandra:3.2
+    environment:
+      - CASSANDRA_LISTEN_ADDRESS=127.0.0.1
+      - CASSANDRA_RPC_ADDRESS=127.0.0.1
+      - CASSANDRA_START_RPC=true
+
 build:
-  image: lensa/pyspark:ubuntu-pkgs-2-3-spark-1.6.0-hadoop-2.6-hdfs-client-cdh5.5.1-java-8-mesos-0.25.0-0.2.70-ubuntu-15.04
+  image: lensa/pyspark:pip-2-3-spark-1.6.0-hdfs-client-cdh5.5.1-java-8-mesos-0.26.0-0.2.145-ubuntu-15.04
   environment:
     - ZOOKEEPER_PATH=/usr/share/java
+    - CASSANDRA_TEST_HOST=127.0.0.1
+    - CASSANDRA_TEST_PORT=9042
+    - ZOOKEEPER_HOST=localhost:2181
+    - MARATHON_HOST=localhost:8080
+    - CHRONOS_HOST=localhost:4400
+    - HDFS_HOST=localhost:8020
   commands:
+    - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M1-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
     - python setup.py test
