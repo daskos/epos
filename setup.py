@@ -42,7 +42,8 @@ setup(name='epos',
                         'dask.mesos'],
       cmdclass={'test': PyTest},
       tests_require=['pytest', 'pywebhdfs', 'pymongo',
-                     'kazoo', 'sqlalchemy', 'paramiko', 'cassandra-driver'],
+                     'kazoo', 'sqlalchemy', 'paramiko',
+                     'cassandra-driver'],
       dependency_links=[
           'git+https://github.com/lensacom/dask.mesos.git#egg=dask.mesos-0.1'],
       zip_safe=False)
