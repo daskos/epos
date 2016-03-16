@@ -49,7 +49,4 @@ build:
   commands:
     - export HDFS_HOST=`hostname`:8020
     - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M1-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
-    - pip install --process-dependency-links -e .
-    - pip install pytest
-    - sleep 10000000000000
     - python setup.py test
