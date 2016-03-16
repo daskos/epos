@@ -15,11 +15,13 @@ pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
 def destroy_jobss():
     for job in jobs():
         destroy(name=job['name'])
+    while len(jobs()):
+        sleep(.5)
 
 
 def test_chronos_start():
     @chronos(schedule='R/2015-01-01T20:00Z/PT1M', image='python:2-alpine',
-             uris=uris, path=pythonpath)
+             mem=16, uris=uris, path=pythonpath)
     def test(a, b):
         print('Sleeping or 2s')
         sleep(2)

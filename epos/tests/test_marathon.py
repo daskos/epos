@@ -21,7 +21,7 @@ def destroy_apps():
 
 
 def test_marathon_start():
-    @marathon(image=None, path=pythonpath, uris=uris)
+    @marathon(image=None, mem=16, path=pythonpath, uris=uris)
     def test(a, b):
         while True:
             sleep(5)
@@ -41,7 +41,7 @@ def test_marathon_start():
 
 
 def test_marathon_docker_start():
-    @marathon(image='python:2-alpine', path=pythonpath, uris=uris)
+    @marathon(image='python:2-alpine', mem=16, path=pythonpath, uris=uris)
     def docker(a, b):
         while True:
             sleep(5)
