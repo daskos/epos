@@ -86,3 +86,14 @@ def test_decorated_job(decorated_sum):
 def test_curried_job(curried_sum):
     lst = range(100)
     assert curried_sum(lst) == sum(lst)
+
+
+# def test_mesos_master():
+#     def job(sc, sql, lst):
+#         rdd = sc.parallelize(lst)
+#         return rdd.sum()
+
+#     fn = spark(job, master='mesos://localhost:5050')
+#     lst = range(100)
+
+#     assert fn(lst) == sum(lst)

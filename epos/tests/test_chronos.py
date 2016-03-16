@@ -13,7 +13,6 @@ pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
 
 @pytest.fixture(scope='module', autouse=True)
 def destroy_jobss():
-    print(jobs())
     for job in jobs():
         destroy(name=job['name'])
 

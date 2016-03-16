@@ -2,13 +2,9 @@ from __future__ import print_function, absolute_import, division
 
 import os
 import pytest
+
+from odo import odo, convert, HDFS
 from odo.utils import tmpfile
-
-pyspark = pytest.importorskip('pyspark')
-py4j = pytest.importorskip('py4j')
-
-from odo import odo, convert
-from odo import HDFS
 from epos.odo import Parquet
 
 
@@ -31,18 +27,6 @@ def sdfc(sc):
     d = [{'a': 1, 'b': 2}, {'a': 2, 'b': 3}]
     rdd = sc.parallelize(d, 2)
     return rdd.toDF()
-
-
-# @pytest.yield_fixture
-# def tmpdir_hdfs(hdfs, ext=''):
-#     fn = '/tmp/' + str(uuid.uuid1())
-#     if ext:
-#         fn = fn + '.' + ext.lstrip('.')
-
-#     try:
-#         yield fn
-#     finally:
-#         hdfs.delete_file_dir(fn)
 
 
 def test_append_sparkdf_to_parquet(sqlctx, sdf):

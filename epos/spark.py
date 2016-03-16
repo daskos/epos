@@ -10,9 +10,9 @@ from .utils import envargs
 
 @curry
 @envargs(prefix='EPOS_SPARK_')
-def spark(fn, name=None, coarse=False, docker=None, memory=None, role=None,
-          files=[], pyfiles=[], options={}, envs={}, uris=[], constraints=[],
-          log='ERROR'):
+def spark(fn, name=None, master='local[*]', coarse=False, docker=None,
+          memory=None, role=None, files=[], pyfiles=[], options={}, envs={},
+          uris=[], constraints=[], log='ERROR'):
     """Decorator order matters! Spark always comes after/below mesos."""
     opts = copy(options)
     opts.update({
@@ -31,6 +31,7 @@ def spark(fn, name=None, coarse=False, docker=None, memory=None, role=None,
     @wraps(fn)
     def wrapper(*args, **kwargs):
         conf = SparkConf()
+        conf.setMaster(master)
         conf.setAppName(name or fn.__name__)
         conf.setAll(pairs=opts)
         conf.setExecutorEnv(pairs=envs)
