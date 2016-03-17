@@ -1,6 +1,9 @@
 import os
+import sys
 import requests
 import inspect
+from setuptools.sandbox import run_setup
+import shutil
 from toolz import curry
 from functools import wraps
 from copy import copy
@@ -43,3 +46,18 @@ def envargs(fn, prefix='', envs=os.environ):
         return fn(**params)
 
     return wrapper
+
+
+def locate_package(fn):
+    pkg_name = fn.__module__.split('.')[0]
+    pkg_path = os.path.dirname(sys.modules[pkg_name].__file__)
+    return os.path.abspath(pkg_path)
+
+
+def zip_package(pkg_path, format='zip', root_dir='/tmp'):
+    return shutil.make_archive(pkg_path, format=format, root_dir=root_dir)
+
+
+def egg_package(pkg_path, platform='linux-x86_64'):
+    setup_path = os.path.dirname(pkg_path) + '/setup.py'
+    run_setup(setup_path, ['bdist_egg', '-d', '/tmp', '-p', platform])

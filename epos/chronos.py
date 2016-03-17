@@ -14,18 +14,26 @@ endpoint = http_endpoint(host='{}/scheduler'.format(default_host))
 
 schedule_job = endpoint(resource='/iso8601', method=requests.post)
 depend_job = endpoint(resource='/dependency', method=requests.post)
+
 jobs = endpoint(resource='/jobs', method=requests.get)
+start = endpoint(resource='/job/{job}', method=requests.put)
+delete = endpoint(resource='/job/{job}', method=requests.delete)
 
-start = endpoint(resource='/job/{name}', method=requests.put)
-destroy = endpoint(resource='/job/{name}', method=requests.delete)
-
+destroy = endpoint(resource='/task/kill/{job}', method=requests.delete)
 
 @curry
 @envargs(prefix='EPOS_CHRONOS_')
-def chronos(fn, name=None, cpus=0.1, mem=128, image='python',
-            schedule=None, parents=[], path='$PYTHONPATH', uris=[]):
-    payload = {'name': fn.__name__, 'cpus': str(cpus), 'mem': str(mem),
-               'disabled': False, 'uris': uris}
+def chronos(fn, name=None, cpus=0.1, mem=128, image='python', force_pull=True,
+            schedule=None, parents=[], path='$PYTHONPATH', uris=[], envs=[],
+            retries=2, disabled=False, async=False):
+    payload = {'name': fn.__name__,
+               'cpus': str(cpus),
+               'async': bool(async),
+               'mem': str(mem),
+               'disabled': disabled,
+               'retries': int(retries),
+               'uris': uris,
+               'environmentVariables': envs}
 
     if schedule:
         payload['schedule'] = schedule
@@ -34,7 +42,8 @@ def chronos(fn, name=None, cpus=0.1, mem=128, image='python',
 
     if image:
         payload['container'] = {'type': 'DOCKER',
-                                'image': image, 'forcePullImage': True}
+                                'image': str(image),
+                                'forcePullImage': bool(force_pull)}
 
     @wraps(fn)
     def wrapper(*args, **kwargs):

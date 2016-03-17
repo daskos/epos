@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import, division
 
 import pytest
-from epos.chronos import chronos, start, destroy, jobs
+from epos.chronos import chronos, start, delete, destroy, jobs
 from time import sleep
 
 
@@ -12,15 +12,16 @@ pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
 
 
 @pytest.fixture(scope='module', autouse=True)
-def destroy_jobss():
+def destroy_jobs():
     for job in jobs():
-        destroy(name=job['name'])
+        destroy(job=job['name'])
+        delete(job=job['name'])
     while len(jobs()):
         sleep(.5)
 
 
 def test_chronos_start():
-    @chronos(schedule='R/2015-01-01T20:00Z/PT1M', image='python:2-alpine',
+    @chronos(schedule='R0/2015-01-01T20:00Z/PT1M', image='python:2-alpine',
              mem=16, uris=uris, path=pythonpath)
     def test(a, b):
         print('Sleeping or 2s')
@@ -31,12 +32,16 @@ def test_chronos_start():
         test(1, 2)  # add job
         assert jobs()[0]['name'] == 'test'
 
-        start(name='test')
-        while not jobs()[0]['successCount']:
+        start(job='test')
+
+        i = 0
+        while (i < 50) and not jobs()[0]['successCount']:
+            i += 1
             sleep(.5)
 
         assert jobs()[0]['successCount'] == 1
     finally:
-        destroy(name='test')
+        destroy(job='test')
+        delete(job='test')
 
     assert len(jobs()) == 0

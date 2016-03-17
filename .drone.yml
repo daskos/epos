@@ -14,8 +14,10 @@ compose:
       - MESOS_MASTER=zk://localhost:2181/mesos
       - MESOS_HOSTNAME=localhost
       - MESOS_CONTAINERIZERS=docker,mesos
+      - MESOS_WORK_DIR=/tmp/epos/mesos
+      - MESOS_STRICT=false
     volumes:
-      - /tmp/drone/mesos:/tmp/mesos
+      - /tmp/epos/mesos:/tmp/epos/mesos
       - /var/run/docker.sock:/var/run/docker.sock
     privileged: true
   marathon:
