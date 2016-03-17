@@ -15,6 +15,7 @@ compose:
       - MESOS_HOSTNAME=localhost
       - MESOS_CONTAINERIZERS=docker,mesos
     volumes:
+      - /tmp/mesos:/tmp/mesos
       - /var/run/docker.sock:/var/run/docker.sock
     privileged: true
   marathon:
