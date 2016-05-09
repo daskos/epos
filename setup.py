@@ -35,7 +35,7 @@ setup(name='epos',
       maintainer_email='szucs.krisztian@gmail.com',
       license='BSD',
       keywords='task-scheduling parallelism mesos spark',
-      packages=['epos'],
+      packages=['epos', 'epos.odo'],
       long_description=(open('README.rst').read() if exists('README.rst')
                         else ''),
       install_requires=['toolz', 'dask', 'odo',
