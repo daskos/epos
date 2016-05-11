@@ -4,14 +4,10 @@ import sys
 import pytest
 
 
+spark_home = os.environ.get('SPARK_HOME')
 hdfs_host = os.environ.get('HDFS_HOST')
 zookeeper_host = os.environ.get('ZOOKEEPER_HOST')
 cassandra_host = os.environ.get('CASSANDRA_HOST')
-
-spark_home = os.environ['SPARK_HOME']
-spark_python = os.path.join(spark_home, 'python')
-py4j = glob.glob(os.path.join(spark_python, 'lib', 'py4j-*.zip'))[0]
-sys.path[:0] = [spark_python, py4j]
 
 
 @pytest.yield_fixture

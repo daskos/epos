@@ -9,7 +9,7 @@ from .execute import command
 from .utils import http_endpoint, envargs
 
 
-default_host = os.environ.get('CHRONOS_HOST')
+default_host = os.environ.get('CHRONOS_HOST', 'http://localhost:4400')
 endpoint = http_endpoint(host='{}/scheduler'.format(default_host))
 
 schedule_job = endpoint(resource='/iso8601', method=requests.post)

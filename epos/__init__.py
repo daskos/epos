@@ -9,8 +9,10 @@ def ignoring(*exceptions):
     except exceptions:
         pass
 
+from dask import delayed
+
 with ignoring(ImportError):
-    from dask_mesos import mesos
+    from dask_mesos.imperative import mesos
 
 with ignoring(ImportError):
     from .context import Lock, Persist
@@ -18,6 +20,5 @@ with ignoring(ImportError):
 with ignoring(ImportError):
     from .spark import spark
 
-from dask.imperative import do
 from .chronos import chronos
 from .marathon import marathon

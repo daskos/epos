@@ -1,4 +1,7 @@
 import pytest
+
+pytest.importorskip('pyspark')
+
 from epos import spark
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
