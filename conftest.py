@@ -4,14 +4,10 @@ import sys
 import pytest
 
 
+spark_home = os.environ.get('SPARK_HOME')
 hdfs_host = os.environ.get('HDFS_HOST')
 zookeeper_host = os.environ.get('ZOOKEEPER_HOST')
 cassandra_host = os.environ.get('CASSANDRA_HOST')
-
-spark_home = os.environ['SPARK_HOME']
-spark_python = os.path.join(spark_home, 'python')
-py4j = glob.glob(os.path.join(spark_python, 'lib', 'py4j-*.zip'))[0]
-sys.path[:0] = [spark_python, py4j]
 
 
 @pytest.yield_fixture
@@ -46,6 +42,7 @@ def sc():
         chost, cport = cassandra_host.split(':')
         conf.set('spark.cassandra.connection.host', chost)
         conf.set('spark.cassandra.connection.port', cport)
+        # spark cassandra packege must be added to spark-defaults.conf
     except:
         pass
 
@@ -67,9 +64,10 @@ def cass(sc):
     pytest.importorskip('cassandra')
     from cassandra.cluster import Cluster
 
+    chost, cport = cassandra_host.split(':')
+    c = Cluster([chost], port=int(cport)).connect()
+
     try:
-        chost, cport = cassandra_host.split(':')
-        c = Cluster(tuple(chost), port=int(cport)).connect()
         c.execute("CREATE KEYSPACE testks WITH REPLICATION = "
                   "{'class': 'SimpleStrategy', 'replication_factor': 1}")
         c.set_keyspace('testks')

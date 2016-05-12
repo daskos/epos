@@ -58,6 +58,6 @@ def zip_package(pkg_path, format='zip', root_dir='/tmp'):
     return shutil.make_archive(pkg_path, format=format, root_dir=root_dir)
 
 
-def egg_package(pkg_path, platform='linux-x86_64'):
+def egg_package(pkg_path, root_dir='/tmp'):
     setup_path = os.path.dirname(pkg_path) + '/setup.py'
-    run_setup(setup_path, ['bdist_egg', '-d', '/tmp', '-p', platform])
+    run_setup(setup_path, ['sdist', '-d', root_dir])

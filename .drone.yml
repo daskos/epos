@@ -1,52 +1,96 @@
 compose:
   zookeeper:
-    image: jplock/zookeeper
-  mesos-master:
-    image: mesosphere/mesos-master:0.26.0-0.2.145.ubuntu1404
+    net: host
+    image: bobrik/zookeeper
     environment:
-      - MESOS_ZK=zk://localhost:2181/mesos
-      - MESOS_HOSTNAME=localhost
+      - ZK_CONFIG=tickTime=2000,initLimit=10,syncLimit=5,maxClientCnxns=128,forceSync=no,clientPort=2181
+      - ZK_ID=1
+  mesos-master:
+    net: host
+    image: mesosphere/mesos-master:0.28.1
+    environment:
+      - MESOS_ZK=zk://127.0.0.1:2181/mesos
       - MESOS_QUORUM=1
+      - MESOS_CLUSTER=docker-compose
       - MESOS_REGISTRY=in_memory
   mesos-slave:
-    image: mesosphere/mesos-slave-dind:0.2.4_mesos-0.26.0_docker-1.8.2_ubuntu-14.04.3
+    net: host
+    image: mesosphere/mesos-slave:0.28.1
     environment:
-      - MESOS_MASTER=zk://localhost:2181/mesos
-      - MESOS_HOSTNAME=localhost
+      - MESOS_MASTER=zk://127.0.0.1:2181/mesos
       - MESOS_CONTAINERIZERS=docker,mesos
-      - MESOS_WORK_DIR=/tmp/epos/mesos
-      - MESOS_STRICT=false
+      - MESOS_PORT=5051
+      - MESOS_RESOURCES=cpus(*):1.5;ports(*):[11000-11999]
     volumes:
-      - /tmp/epos/mesos:/tmp/epos/mesos
+      - /sys/fs/cgroup:/sys/fs/cgroup
+      - /usr/local/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
     privileged: true
   marathon:
+    net: host
     image: mesosphere/marathon
     environment:
       - MARATHON_MASTER=zk://localhost:2181/mesos
   chronos:
-    image: mesosphere/chronos:chronos-2.4.0-0.1.20151007110204.ubuntu1404-mesos-0.26.0-0.2.145.ubuntu1404
+    net: host
+    image: mesosphere/chronos
     command: ["/usr/bin/chronos", --http_port, "4400", --master, "zk://localhost:2181/mesos", --zk_hosts, "localhost:2181"]
   hdfs:
+    net: host
     image: dockmob/hadoop:2.7.1
     command: [-t, "pseudodistributed"]
   cassandra:
-    image: cassandra:3.2
+    net: host
+    image: cassandra
     environment:
-      - CASSANDRA_LISTEN_ADDRESS=127.0.0.1
-      - CASSANDRA_RPC_ADDRESS=127.0.0.1
       - CASSANDRA_START_RPC=true
 
 
 build:
-  image: lensa/pyspark:pip-2-3-spark-1.6.0-hdfs-client-cdh5.5.1-java-8-mesos-0.26.0-0.2.145-ubuntu-15.04
-  environment:
-    - ZOOKEEPER_PATH=/usr/share/java
-    - CASSANDRA_HOST=127.0.0.1:9042
-    - ZOOKEEPER_HOST=localhost:2181
-    - MARATHON_HOST=localhost:8080
-    - CHRONOS_HOST=localhost:4400
-  commands:
-    - export HDFS_HOST=`hostname`:8020
-    - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M1-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
-    - python setup.py test
+  docker:
+    image: docker:dind
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - docker build -t lensa/epos .
+
+  test:
+    image: lensa/epos
+    net: host
+    environment:
+      - MESOS_MASTER=zk://127.0.0.1:2181/mesos
+      - ZOOKEEPER_HOST=127.0.0.1:2181
+      - ZOOKEEPER_PATH=/usr/share/java
+      - HDFS_HOST=localhost:8020
+      - CASSANDRA_HOST=localhost:9042
+      - MARATHON_HOST=localhost:8080
+      - CHRONOS_HOST=localhost:4400
+      - PYTHONPATH=/spark/python:/spark/python/lib/py4j-0.9-src.zip
+    commands:
+      - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
+      - pip install -e .[complete]
+      - sleep 10  # wait for service containers to start
+      - python setup.py test
+
+
+publish:
+  pypi:
+    repository: https://pypi.python.org/pypi
+    username: $$PYPI_USERNAME
+    password: $$PYPI_PASSWORD
+    distributions:
+      - sdist
+    when:
+      event: [tag]
+  docker:
+    username: $$DOCKERHUB_USERNAME
+    password: $$DOCKERHUB_PASSWORD
+    email: $$DOCKERHUB_EMAIL
+    repo: lensa/epos
+    file: Dockerfile
+    tag:
+      - $$TAG
+      - latest
+    when:
+      event: [tag]

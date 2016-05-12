@@ -35,7 +35,7 @@ else:
         path = 'hdfs://{user}@{host}/{path}'.format(user=p.hdfs.user_name,
                                                     host=p.hdfs.host,
                                                     path=p.path.lstrip('/'))
-        return df.write.parquet(path)
+        return df.write.parquet(path, **kwargs)
 
 
 @append.register(Cassandra, SparkDataFrame)

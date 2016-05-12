@@ -1,4 +1,7 @@
 import pytest
+
+pytest.importorskip('pyspark')
+
 from epos import spark
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
@@ -88,12 +91,13 @@ def test_curried_job(curried_sum):
     assert curried_sum(lst) == sum(lst)
 
 
-# def test_mesos_master():
-#     def job(sc, sql, lst):
-#         rdd = sc.parallelize(lst)
-#         return rdd.sum()
+def test_mesos_master():
+    @spark(master='zk://localhost:2181/mesos', docker='lensa/epos',
+           memory='1G', coarse=1)
+    def job(sc, sql, lst):
+        rdd = sc.parallelize(lst)
+        return rdd.sum()
 
-#     fn = spark(job, master='mesos://localhost:5050')
-#     lst = range(100)
+    lst = range(100)
 
-#     assert fn(lst) == sum(lst)
+    assert job(lst) == sum(lst)
