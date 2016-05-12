@@ -42,6 +42,7 @@ def sc():
         chost, cport = cassandra_host.split(':')
         conf.set('spark.cassandra.connection.host', chost)
         conf.set('spark.cassandra.connection.port', cport)
+        # spark cassandra packege must be added to spark-defaults.conf
     except:
         pass
 
@@ -63,9 +64,10 @@ def cass(sc):
     pytest.importorskip('cassandra')
     from cassandra.cluster import Cluster
 
+    chost, cport = cassandra_host.split(':')
+    c = Cluster([chost], port=int(cport)).connect()
+
     try:
-        chost, cport = cassandra_host.split(':')
-        c = Cluster(tuple(chost), port=int(cport)).connect()
         c.execute("CREATE KEYSPACE testks WITH REPLICATION = "
                   "{'class': 'SimpleStrategy', 'replication_factor': 1}")
         c.set_keyspace('testks')

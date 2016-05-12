@@ -45,7 +45,7 @@ def test_append_sparkdf_to_parquet_hdfs(sqlctx, hdfs, sdf):
                                               path=path.lstrip('/'))
 
     # write parquet file to HDFS
-    res = odo(sdf, HDFS(Parquet)(path, hdfs=hdfs))
+    res = odo(sdf, HDFS(Parquet)(path, hdfs=hdfs), mode='append')
     sdf_ = sqlctx.read.parquet(hdfs_path)
     assert set(sdf_.collect()) == set(sdf.collect())
 

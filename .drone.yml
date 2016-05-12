@@ -41,10 +41,8 @@ compose:
     command: [-t, "pseudodistributed"]
   cassandra:
     net: host
-    image: cassandra:3.2
+    image: cassandra
     environment:
-      - CASSANDRA_LISTEN_ADDRESS=127.0.0.1
-      - CASSANDRA_RPC_ADDRESS=127.0.0.1
       - CASSANDRA_START_RPC=true
 
 
@@ -64,12 +62,13 @@ build:
       - MESOS_MASTER=zk://127.0.0.1:2181/mesos
       - ZOOKEEPER_HOST=127.0.0.1:2181
       - ZOOKEEPER_PATH=/usr/share/java
-      - CASSANDRA_HOST=127.0.0.1:9042
+      - HDFS_HOST=localhost:8020
+      - CASSANDRA_HOST=localhost:9042
       - MARATHON_HOST=localhost:8080
       - CHRONOS_HOST=localhost:4400
       - PYTHONPATH=/spark/python:/spark/python/lib/py4j-0.9-src.zip
     commands:
-      - export HDFS_HOST=`hostname`:8020
+      - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
       - pip install -e .[complete]
       - python setup.py test
 

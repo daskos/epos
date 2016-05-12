@@ -6,6 +6,7 @@ RUN pip install cloudpickle && \
   easy_install mesos.egg && \
   rm /mesos.egg
 
+RUN pip install odo pywebhdfs pymongo sqlalchemy paramiko cassandra-driver
 ADD . /epos
 WORKDIR /epos
 RUN pip install .[complete]
