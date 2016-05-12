@@ -70,6 +70,7 @@ build:
     commands:
       - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
       - pip install -e .[complete]
+      - sleep 10  # wait for service containers to start
       - python setup.py test
 
 
