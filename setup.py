@@ -49,6 +49,6 @@ setup(name='epos',
       cmdclass={'test': PyTest},
       install_requires=extras_require['mesos'],
       extras_require=extras_require,
-      tests_require=['pytest', 'pytest-mock'],
+      tests_require=['pytest'],
       setup_requires=['pytest'],
       zip_safe=False)
