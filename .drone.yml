@@ -69,9 +69,6 @@ build:
       - CHRONOS_HOST=localhost:4400
     commands:
       #- echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
-      #- pip install -e .[complete]
-      #- pip install pytest
-      #- sleep 100000000
       - python setup.py test
 
 
@@ -84,6 +81,7 @@ publish:
       - sdist
     when:
       event: [tag]
+
   docker:
     username: $$DOCKERHUB_USERNAME
     password: $$DOCKERHUB_PASSWORD
@@ -95,3 +93,14 @@ publish:
       - latest
     when:
       event: [tag]
+
+  docker:
+    username: $$DOCKERHUB_USERNAME
+    password: $$DOCKERHUB_PASSWORD
+    email: $$DOCKERHUB_EMAIL
+    repo: lensa/epos
+    file: Dockerfile
+    tag:
+      - master
+    when:
+      branch: master

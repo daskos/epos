@@ -14,7 +14,7 @@ def destroy_jobs():
         delete(job=job['name'])
     with timeout(10):
         while len(jobs()):
-            sleep(.1)
+            time.sleep(.1)
 
 
 @pytest.mark.skip(reason='cannot test without docker due to colon separated '

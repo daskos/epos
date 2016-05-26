@@ -1,9 +1,7 @@
 import pytest
 
 pytest.importorskip('pyspark')
-
 from epos import spark
-from epos.utils import GiB, MiB
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 
@@ -92,8 +90,8 @@ def test_curried_job(curried_sum):
 
 
 def test_local_master():
-    @spark(master='local[1]', driver_memory=512*MiB, executor_memory=512*MiB,
-           python_worker_memory=256*MiB)
+    @spark(master='local[1]', driver_memory=512, executor_memory=512,
+           python_worker_memory=256)
     def job(sc, sql, lst):
         rdd = sc.parallelize(lst)
         return rdd.sum()
@@ -105,8 +103,8 @@ def test_local_master():
 
 def test_mesos_master():
     @spark(master='mesos://localhost:5050', docker='lensa/epos:dev',
-           driver_memory=512*MiB, executor_memory=512*MiB,
-           python_worker_memory=256*MiB,
+           driver_memory=512, executor_memory=512,
+           python_worker_memory=256,
            coarse=1, executor_cores=1)
     def job(sc, sql, lst):
         rdd = sc.parallelize(lst)

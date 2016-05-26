@@ -1,6 +1,4 @@
-import glob
 import os
-import sys
 import pytest
 import logging
 
@@ -16,8 +14,8 @@ cassandra_host = os.environ.get('CASSANDRA_HOST')
 @pytest.yield_fixture
 def zk():
     pytest.importorskip('kazoo')
-    pytestmark = pytest.mark.skipif(zookeeper_host is None,
-                                    reason='No ZOOKEEPER_HOST envar defined')
+    pytest.mark.skipif(zookeeper_host is None,
+                       reason='No ZOOKEEPER_HOST envar defined')
 
     from kazoo.client import KazooClient
     zk = KazooClient(hosts=zookeeper_host)
@@ -32,8 +30,8 @@ def zk():
 @pytest.yield_fixture(scope='module')
 def sc():
     pytest.importorskip('pyspark')
-    pytestmark = pytest.mark.skipif(spark_home is None,
-                                    reason='No SPARK_HOME envar defined')
+    pytest.mark.skipif(spark_home is None,
+                       reason='No SPARK_HOME envar defined')
 
     from pyspark import SparkContext, SparkConf
 
@@ -83,9 +81,9 @@ def sqlctx(sc):
 
 @pytest.fixture(scope='module')
 def hdfs():
-    pywebhdfs = pytest.importorskip('pywebhdfs')
-    pytestmark = pytest.mark.skipif(hdfs_host is None,
-                                    reason='No HDFS_HOST envar defined')
+    pytest.importorskip('pywebhdfs')
+    pytest.mark.skipif(hdfs_host is None,
+                       reason='No HDFS_HOST envar defined')
 
     from pywebhdfs.webhdfs import PyWebHdfsClient
     return PyWebHdfsClient(host=hdfs_host, user_name='hdfs')

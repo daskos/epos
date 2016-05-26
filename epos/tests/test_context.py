@@ -1,17 +1,17 @@
-from operator import add, mul
+from __future__ import absolute_import, division, print_function
+
 import pytest
-
-pytest.importorskip('numpy')
-
-import numpy as np  # TODO: remove numpy dependency
-from numpy.testing import assert_array_equal
-
+from operator import add, mul
 from cloudpickle import loads
 from dask import get
 from dask.callbacks import Callback
 from epos.context import Lock, Persist
 from kazoo.client import NoNodeError
 from kazoo.recipe.lock import LockTimeout
+
+pytest.importorskip('numpy')
+import numpy as np  # TODO: remove numpy dependency
+from numpy.testing import assert_array_equal
 
 
 class Ran(Callback):

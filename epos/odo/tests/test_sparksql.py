@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, division
 import os
 import pytest
 
-from odo import odo, convert, HDFS
+from odo import odo, HDFS
 from odo.utils import tmpfile
 from epos.odo import Parquet
 
@@ -32,7 +32,7 @@ def sdfc(sc):
 def test_append_sparkdf_to_parquet(sqlctx, sdf):
     with tmpfile('.parquet') as path:
         local_path = 'file://{path}'.format(path=path)
-        res = odo(sdf, Parquet(path))  # write local parquet file
+        odo(sdf, Parquet(path))  # write local parquet file
         sdf_ = sqlctx.read.parquet(local_path)
 
         assert os.path.exists(path)
@@ -45,7 +45,7 @@ def test_append_sparkdf_to_parquet_hdfs(sqlctx, hdfs, sdf):
                                               path=path.lstrip('/'))
 
     # write parquet file to HDFS
-    res = odo(sdf, HDFS(Parquet)(path, hdfs=hdfs), mode='append')
+    odo(sdf, HDFS(Parquet)(path, hdfs=hdfs), mode='append')
     sdf_ = sqlctx.read.parquet(hdfs_path)
     assert set(sdf_.collect()) == set(sdf.collect())
 

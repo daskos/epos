@@ -1,9 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
-
-bson = pytest.importorskip('bson')
-
 import gzip
 import os
 from collections import Iterator
@@ -16,6 +13,8 @@ from odo.chunks import chunks
 from odo.temp import Temp, _Temp
 from odo.utils import tmpfile
 from toolz import first
+
+bson = pytest.importorskip('bson')
 
 
 @contextmanager

@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import pytest
 from epos.execute import loads, dumps, run, command
 import subprocess
 from operator import add

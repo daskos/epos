@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import pytest
 from odo import resource, HDFS
 from epos.odo import Parquet
 

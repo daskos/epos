@@ -5,6 +5,7 @@ from epos.utils import envargs
 def calc(a, b, c='c', d='d'):
     return a + b + c + d
 
+
 def proxy(a, b, **kwargs):
     return (a, b, kwargs)
 

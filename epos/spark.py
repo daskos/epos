@@ -1,10 +1,10 @@
-from copy import copy
-from functools import wraps
+from __future__ import absolute_import, division, print_function
 
+from toolz import curry
+from functools import wraps
 
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
-from toolz import curry
 
 from .utils import envargs, MiB, GiB
 
