@@ -7,7 +7,7 @@ compose:
       - ZK_ID=1
   mesos-master:
     net: host
-    image: mesosphere/mesos-master:0.28.1
+    image: mesosphere/mesos-master:0.28.0-2.0.16.ubuntu1404
     environment:
       - MESOS_ZK=zk://127.0.0.1:2181/mesos
       - MESOS_QUORUM=1
@@ -15,7 +15,8 @@ compose:
       - MESOS_REGISTRY=in_memory
   mesos-slave:
     net: host
-    image: mesosphere/mesos-slave:0.28.1
+    pid: host
+    image: mesosphere/mesos-slave:0.28.0-2.0.16.ubuntu1404
     environment:
       - MESOS_MASTER=zk://127.0.0.1:2181/mesos
       - MESOS_CONTAINERIZERS=docker,mesos
@@ -39,11 +40,11 @@ compose:
     net: host
     image: dockmob/hadoop:2.7.1
     command: [-t, "pseudodistributed"]
-  cassandra:
-    net: host
-    image: cassandra
-    environment:
-      - CASSANDRA_START_RPC=true
+  # cassandra:
+  #   net: host
+  #   image: cassandra
+  #   environment:
+  #     - CASSANDRA_START_RPC=true
 
 
 build:
@@ -53,24 +54,24 @@ build:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - docker build -t lensa/epos .
+      - docker build -t lensa/epos:dev .
 
   test:
-    image: lensa/epos
+    image: lensa/epos:dev
     net: host
     environment:
-      - MESOS_MASTER=zk://127.0.0.1:2181/mesos
-      - ZOOKEEPER_HOST=127.0.0.1:2181
+      - MESOS_MASTER=zk://localhost:2181/mesos
+      - ZOOKEEPER_HOST=localhost:2181
       - ZOOKEEPER_PATH=/usr/share/java
       - HDFS_HOST=localhost:8020
       - CASSANDRA_HOST=localhost:9042
       - MARATHON_HOST=localhost:8080
       - CHRONOS_HOST=localhost:4400
-      - PYTHONPATH=/spark/python:/spark/python/lib/py4j-0.9-src.zip
     commands:
-      - echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
-      - pip install -e .[complete]
-      - sleep 10  # wait for service containers to start
+      #- echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
+      #- pip install -e .[complete]
+      #- pip install pytest
+      #- sleep 100000000
       - python setup.py test
 
 

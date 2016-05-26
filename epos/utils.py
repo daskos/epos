@@ -9,6 +9,30 @@ from functools import wraps
 from copy import copy
 
 
+MB, MiB = 1, 1
+GB, GiB = 1000 * MB, 1024 * MiB
+TB, TiB = 1000 * GB, 1024 * GiB
+
+
+# def trace(trace_arguments = False) :
+#     def decorator(func) :
+#         @wraps(func) # <-- how the wrapped function retains the original name
+#         def wrapper(*args, **kwargs) :
+#             if trace_arguments :
+#                 print("Entering {} with arguments {} {}".format(
+#                                                 func.__name__, args, kwargs))
+#             else :
+#                 print("Entering {}".format(func.__name__))
+#             ret = func(*args, **kwargs)
+#             if trace_arguments :
+#                 print("Leaving {} with result {}".format(func.__name__, ret))
+#             else :
+#                 print("Leaving {}".format(func.__name__))
+#             return ret
+#         return wrapper
+#     return decorator
+
+
 @curry
 def http_endpoint(host, resource, method=requests.get, **params):
     endpoint = 'http://{host}/{resource}'.format(host=host,
@@ -32,20 +56,22 @@ def http_endpoint(host, resource, method=requests.get, **params):
 @curry
 def envargs(fn, prefix='', envs=os.environ):
     spec = inspect.getargspec(fn)
-    envs = {k: envs[prefix + k.upper()] for k in spec.args
-            if prefix + k.upper() in envs}
-    defs = dict(zip(spec.args[-len(spec.defaults):],
-                    spec.defaults))
+    envs = {k.lstrip(prefix).lower(): v
+            for k, v in envs.items() if k.startswith(prefix)}
+    if not spec.keywords:
+        envs = {k: v for k, v in envs.items() if k in spec.args}
+    defaults = spec.defaults or []
+    defs = dict(zip(spec.args[-len(defaults):], defaults))
     defs.update(envs)
 
     @wraps(fn)
-    def wrapper(*args, **kwargs):
+    def closure(*args, **kwargs):
         params = copy(defs)
         params.update(zip(spec.args[:len(args)], args))
         params.update(kwargs)
         return fn(**params)
 
-    return wrapper
+    return closure
 
 
 def locate_package(fn):

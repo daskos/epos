@@ -21,11 +21,13 @@ delete = endpoint(resource='/job/{job}', method=requests.delete)
 
 destroy = endpoint(resource='/task/kill/{job}', method=requests.delete)
 
+
 @curry
 @envargs(prefix='EPOS_CHRONOS_')
-def chronos(fn, name=None, cpus=0.1, mem=128, image='python', force_pull=True,
-            schedule=None, parents=[], path='$PYTHONPATH', uris=[], envs=[],
-            retries=2, disabled=False, async=False):
+def chronos(fn, name=None, cpus=0.1, mem=128, docker='lensa/epos',
+            force_pull=False, schedule=None, parents=[], path='$PYTHONPATH',
+            uris=[], envs={}, retries=2, disabled=False, async=False):
+    envs = [{'name': k, 'value': v} for k, v in envs.items()]
     payload = {'name': fn.__name__,
                'cpus': str(cpus),
                'async': bool(async),
@@ -40,9 +42,9 @@ def chronos(fn, name=None, cpus=0.1, mem=128, image='python', force_pull=True,
     elif parents:
         payload['parents'] = parents
 
-    if image:
+    if docker:
         payload['container'] = {'type': 'DOCKER',
-                                'image': str(image),
+                                'image': str(docker),
                                 'forcePullImage': bool(force_pull)}
 
     @wraps(fn)

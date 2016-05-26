@@ -7,10 +7,6 @@ from epos.chronos import chronos, start, delete, destroy, jobs
 from satyr.utils import timeout
 
 
-# TODO test w/o docker
-
-
-
 @pytest.fixture(scope='module', autouse=True)
 def destroy_jobs():
     for job in jobs():
@@ -18,7 +14,7 @@ def destroy_jobs():
         delete(job=job['name'])
     with timeout(10):
         while len(jobs()):
-            sleep(.5)
+            sleep(.1)
 
 
 @pytest.mark.skip(reason='cannot test without docker due to colon separated '
@@ -28,11 +24,9 @@ def test_chronos_start():
     pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
 
     @chronos(schedule='R0/2015-01-01T20:00Z/PT1M',
-             cpus=0.1, mem=64, uris=uris, path=pythonpath)
+             cpus=0.1, mem=128, uris=uris, path=pythonpath)
     def test(a, b):
-        print('Sleeping or 2s')
-        time.sleep(2)
-        print('Slept 2s')
+        print('Test function')
 
     try:
         test(1, 2)  # add job
@@ -42,7 +36,7 @@ def test_chronos_start():
 
         with timeout(20):
             while not jobs()[0]['successCount']:
-                time.sleep(.5)
+                time.sleep(.1)
 
         assert jobs()[0]['successCount'] == 1
     finally:
@@ -53,12 +47,10 @@ def test_chronos_start():
 
 
 def test_chronos_docker_start():
-    @chronos(schedule='R0/2015-01-01T20:00Z/PT1M', image='lensa/satyr',
-             cpus=0.1, mem=64)
+    @chronos(schedule='R0/2015-01-01T20:00Z/PT1M', docker='lensa/epos:dev',
+             cpus=0.1, mem=128)
     def test(a, b):
-        print('Sleeping or 2s')
-        time.sleep(2)
-        print('Slept 2s')
+        print('Test function')
 
     try:
         test(1, 2)  # add job
@@ -68,7 +60,7 @@ def test_chronos_docker_start():
 
         with timeout(20):
             while not jobs()[0]['successCount']:
-                time.sleep(.5)
+                time.sleep(.1)
 
         assert jobs()[0]['successCount'] == 1
     finally:

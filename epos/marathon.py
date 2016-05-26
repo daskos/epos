@@ -36,7 +36,7 @@ def _parse_volumes(vols):
 
 @curry
 @envargs(prefix='EPOS_MARATHON_')
-def marathon(fn, name=None, cpus=0.1, mem=128, instances=1, image='python',
+def marathon(fn, name=None, cpus=0.1, mem=128, instances=1, docker='lensa/epos',
              path='$PYTHONPATH', envs={}, uris=[], volumes=[],
              host=default_host):
     payload = {
@@ -47,8 +47,8 @@ def marathon(fn, name=None, cpus=0.1, mem=128, instances=1, image='python',
         'env': dict(envs),
         'uris': list(uris)
     }
-    if image:
-        payload['container'] = {'docker': {'image': str(image)}}
+    if docker:
+        payload['container'] = {'docker': {'image': str(docker)}}
         if volumes:
             payload['container']['volumes'] = _parse_volumes(volumes)
 

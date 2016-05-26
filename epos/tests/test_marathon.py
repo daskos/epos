@@ -16,24 +16,24 @@ def destroy_apps():
 
     with timeout(15):
         while len(deployments()):
-            time.sleep(.5)
+            time.sleep(.1)
 
 
 def test_marathon_start():
     uris = ['https://github.com/cloudpipe/cloudpickle/archive/v0.2.1.tar.gz']
     pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
 
-    @marathon(image=None, cpus=0.1, mem=64, path=pythonpath, uris=uris)
+    @marathon(docker=None, cpus=0.1, mem=64, path=pythonpath, uris=uris)
     def test(a, b):
         while True:
-            time.sleep(2)
-            print('Slept 2s')
+            time.sleep(0.1)
+            print('Slept 0.1s')
 
     try:
         test(1, 2)
         with timeout(20):
             while len(deployments()):
-                time.sleep(.5)
+                time.sleep(.1)
 
         result = app(id='test')
         assert result['app']['tasksRunning'] == 1
@@ -44,17 +44,17 @@ def test_marathon_start():
 
 
 def test_marathon_docker_start():
-    @marathon(image='lensa/satyr', cpus=0.1, mem=64)
+    @marathon(docker='lensa/epos:dev', cpus=0.1, mem=64)
     def docker(a, b):
         while True:
-            time.sleep(2)
-            print('Slept 2s')
+            time.sleep(0.1)
+            print('Slept 0.1s')
 
     try:
         docker(1, 2)
         with timeout(20):
             while len(deployments()):
-                time.sleep(.5)
+                time.sleep(.1)
 
         result = app(id='docker')
         assert result['app']['tasksRunning'] == 1

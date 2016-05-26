@@ -3,6 +3,7 @@ import pytest
 pytest.importorskip('pyspark')
 
 from epos import spark
+from epos.utils import GiB, MiB
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 
@@ -50,16 +51,16 @@ def test_app_name(options_proxy):
 
 def test_coarse_mode(options_proxy):
     opts = spark(options_proxy)()
-    assert opts.get("spark.mesos.coarse") == 'False'
+    assert opts.get('spark.mesos.coarse') == 'False'
 
     opts = spark(options_proxy, coarse=10)()
     assert opts.get('spark.mesos.coarse') == 'True'
-    assert opts.get('spark.coarse.max') == '10'
+    assert opts.get('spark.cores.max') == '10'
 
 
 def test_docker_executor(options_proxy):
     opts = spark(options_proxy)()
-    assert opts.get('spark.mesos.executor.docker.image') is None
+    assert opts.get('spark.mesos.executor.docker.image') == 'lensa/epos'
     opts = spark(options_proxy, docker='testimage')()
     assert opts.get('spark.mesos.executor.docker.image') == 'testimage'
 
@@ -73,12 +74,11 @@ def test_executor_envs(options_proxy):
 
 
 def test_custom_options(options_proxy):
-    custom_opts = {'spark.driver.maxResultSize': '2g',
-                   'spark.shuffle.manager': 'hash',
-                   'spark.shuffle.compress': False}
-    opts = spark(options_proxy, options=custom_opts)()
-    for k, v in custom_opts.items():
-        assert opts.get(k) == str(v)
+    custom_opts = {'driver_maxResultSize': '2g',
+                   'shuffle_compress': False}
+    opts = spark(options_proxy, **custom_opts)()
+    assert opts['spark.driver.maxResultSize'] == '2g'
+    assert opts['spark.shuffle.compress'] == 'False'
 
 
 def test_decorated_job(decorated_sum):
@@ -91,9 +91,23 @@ def test_curried_job(curried_sum):
     assert curried_sum(lst) == sum(lst)
 
 
+def test_local_master():
+    @spark(master='local[1]', driver_memory=512*MiB, executor_memory=512*MiB,
+           python_worker_memory=256*MiB)
+    def job(sc, sql, lst):
+        rdd = sc.parallelize(lst)
+        return rdd.sum()
+
+    lst = range(100)
+
+    assert job(lst) == sum(lst)
+
+
 def test_mesos_master():
-    @spark(master='zk://localhost:2181/mesos', docker='lensa/epos',
-           memory='1G', coarse=1)
+    @spark(master='mesos://localhost:5050', docker='lensa/epos:dev',
+           driver_memory=512*MiB, executor_memory=512*MiB,
+           python_worker_memory=256*MiB,
+           coarse=1, executor_cores=1)
     def job(sc, sql, lst):
         rdd = sc.parallelize(lst)
         return rdd.sum()

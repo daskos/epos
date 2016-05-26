@@ -50,6 +50,7 @@ def test_append_sparkdf_to_parquet_hdfs(sqlctx, hdfs, sdf):
     assert set(sdf_.collect()) == set(sdf.collect())
 
 
+@pytest.mark.skip(reason='spark-connector incompatibility with spark 2.0')
 def test_append_sparksql_dataframe_to_cassandra(sqlctx, sdfc, cass):
     path = 'cql://localhost:9160/testks::testtable'
     odo(sdfc, path)

@@ -7,7 +7,6 @@ logging.basicConfig(level=logging.INFO,
                     format='%(relativeCreated)6d %(threadName)s %(message)s')
 
 
-
 @contextmanager
 def ignoring(*exceptions):
     try:
@@ -15,10 +14,11 @@ def ignoring(*exceptions):
     except exceptions:
         pass
 
+
 from dask import delayed
 
 with ignoring(ImportError):
-    from dask_mesos.imperative import mesos
+    from dask_mesos import mesos
 
 with ignoring(ImportError):
     from .context import Lock, Persist
