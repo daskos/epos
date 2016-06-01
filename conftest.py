@@ -9,6 +9,7 @@ spark_home = os.environ.get('SPARK_HOME')
 hdfs_host = os.environ.get('HDFS_HOST')
 zookeeper_host = os.environ.get('ZOOKEEPER_HOST')
 cassandra_host = os.environ.get('CASSANDRA_HOST')
+kafka_host = os.environ.get('KAFKA_HOST')
 
 
 @pytest.yield_fixture
@@ -87,3 +88,12 @@ def hdfs():
 
     from pywebhdfs.webhdfs import PyWebHdfsClient
     return PyWebHdfsClient(host=hdfs_host, user_name='hdfs')
+
+
+@pytest.fixture(scope='module')
+def kafka():
+    pytest.importorskip('pykafka')
+    pytest.mark.skipif(kafka_host is None,
+                       reason='No KAFKA_HOST envar defined')
+    from pykafka import KafkaClient
+    return KafkaClient(hosts=kafka_host)

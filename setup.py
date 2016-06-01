@@ -29,7 +29,7 @@ class PyTest(TestCommand):
 
 extras_require = {
     'backends': ['odo', 'pywebhdfs', 'pymongo', 'sqlalchemy', 'paramiko',
-                 'cassandra-driver'],
+                 'cassandra-driver', 'pykafka'],
     'mesos': ['dask.mesos', 'satyr', 'requests']
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))

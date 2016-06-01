@@ -15,3 +15,6 @@ with ignoring(ImportError):
 
 with ignoring(ImportError):
     from .cassandra import Cassandra
+
+with ignoring(ImportError):
+    from .kafka import Kafka

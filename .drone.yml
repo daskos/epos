@@ -7,8 +7,9 @@ compose:
       - ZK_ID=1
   mesos-master:
     net: host
-    image: mesosphere/mesos-master:0.28.0-2.0.16.ubuntu1404
+    image: mesosphere/mesos-master:0.28.1
     environment:
+      - MESOS_IP=127.0.0.1
       - MESOS_ZK=zk://127.0.0.1:2181/mesos
       - MESOS_QUORUM=1
       - MESOS_CLUSTER=docker-compose
@@ -16,7 +17,7 @@ compose:
   mesos-slave:
     net: host
     pid: host
-    image: mesosphere/mesos-slave:0.28.0-2.0.16.ubuntu1404
+    image: mesosphere/mesos-slave:0.28.1
     environment:
       - MESOS_MASTER=zk://127.0.0.1:2181/mesos
       - MESOS_CONTAINERIZERS=docker,mesos
@@ -40,6 +41,16 @@ compose:
     net: host
     image: dockmob/hadoop:2.7.1
     command: [-t, "pseudodistributed"]
+  kafka:
+    net: host
+    image: wurstmeister/kafka
+    environment:
+      - KAFKA_BROKER_ID=0
+      - KAFKA_NUM_PARTITIONS=1
+      - KAFKA_ADVERTISED_HOST_NAME=localhost
+      - KAFKA_ADVERTISED_PORT=9092
+      - KAFKA_ZOOKEEPER_CONNECT=127.0.0.1:2181
+      - KAFKA_LOG_DIRS=/var/log/kafka
   # cassandra:
   #   net: host
   #   image: cassandra
@@ -67,8 +78,14 @@ build:
       - CASSANDRA_HOST=localhost:9042
       - MARATHON_HOST=localhost:8080
       - CHRONOS_HOST=localhost:4400
+      - KAFKA_HOST=localhost:9092
     commands:
+      - export LIBPROCESS_IP=`hostname -I | cut -f1 -d" "`
+      - export SPARK_LOCAL_IP=`hostname -I | cut -f1 -d" "`
       #- echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
+      - pip install -e .
+      - pip install pytest
+      #- sleep 123123123123
       - python setup.py test
 
 
