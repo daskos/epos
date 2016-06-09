@@ -26,5 +26,7 @@ with ignoring(ImportError):
 with ignoring(ImportError):
     from .spark import spark
 
+
+from .odo import odo
 from .chronos import chronos
 from .marathon import marathon

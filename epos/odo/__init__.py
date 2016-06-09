@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from odo import odo
 from odo.utils import ignoring
 
 from .core import Iterator

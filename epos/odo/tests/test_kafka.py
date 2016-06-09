@@ -21,8 +21,8 @@ kafka_host = os.environ.get('KAFKA_HOST')
 
 def test_kafka_resource(kafka):
     res1 = resource('kafka://{}/topic1'.format(kafka_host))
-    res2 = resource('kafka://{}/topic2'.format(kafka_host))
-    res3 = resource('kafka:///topic3', kafka=kafka)
+    res2 = resource('kafka://{}/topic2.dot'.format(kafka_host))
+    res3 = resource('kafka:///topic3._-', kafka=kafka)
     res4 = resource('kafka://topic4', kafka=kafka)
 
     assert isinstance(res1, Kafka)
@@ -36,8 +36,11 @@ def test_kafka_resource(kafka):
     assert res4.client == kafka
 
     assert isinstance(res1.topic, Topic)
+    assert isinstance(res1.topic._name, 'topic1')
     assert isinstance(res2.topic, Topic)
+    assert isinstance(res2.topic._name, 'topic2.dot')
     assert isinstance(res3.topic, Topic)
+    assert isinstance(res2.topic._name, '.topic3._-')
     assert isinstance(res4.topic, Topic)
 
 

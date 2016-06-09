@@ -50,5 +50,5 @@ setup(name='epos',
       install_requires=extras_require['mesos'],
       extras_require=extras_require,
       tests_require=['pytest'],
-      setup_requires=['pytest'],
+      setup_requires=['pytest'],  # is it necessary?
       zip_safe=False)

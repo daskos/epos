@@ -31,9 +31,19 @@ class Kafka(object):
 
 @resource.register('kafka://.*')
 def resource_kafka(uri, kafka=None, **kwargs):
-    pattern = r'kafka://(?P<host>[\w.-]*)?(:(?P<port>\d+))?/?(?P<topic>\w+)'
+    pattern = r'kafka://(?P<host>[\w.-]*)?(:(?P<port>\d+))/(?P<topic>[^\/]+)$'
     d = re.search(pattern, uri).groupdict()
-    return Kafka(host=d['host'], port=d['port'], topic=d['topic'], kafka=kafka, **kwargs)
+    return Kafka(host=d['host'], port=d['port'], topic=d['topic'], kafka=kafka,
+                 **kwargs)
+
+
+@convert.register(Iterator, Kafka)
+def kafka_to_iterator(dst, dshape=None, loads=json.loads, kafka=None, **kwargs):
+    kwargs.pop('excluded_edges', None)
+    kwargs.pop('chunksize', None)
+    consumer = dst.topic.get_simple_consumer(**kwargs)
+    for message in consumer:
+        yield loads(message.value)
 
 
 @append.register(Kafka, (list, Iterator))
@@ -48,17 +58,6 @@ def append_iterator_to_kafka(dst, src, dshape=None, dumps=json.dumps, kafka=None
 @append.register(Kafka, object)  # anything else
 def append_object_to_kafka(dst, src, dshape=None, dumps=json.dumps, kafka=None,
                            **kwargs):
-    with dst.topic.get_producer() as producer:
-        producer.produce(encode(src))
+    with dst.topic.get_producer(**kwargs) as producer:
+        producer.produce(dumps(src))
     return kafka
-
-
-@convert.register(Iterator, Kafka)
-def kafka_to_iterator(dst, dshape=None, loads=json.loads, kafka=None, **kwargs):
-    kwargs.pop('excluded_edges')
-    consumer = dst.topic.get_simple_consumer(**kwargs)
-    for message in consumer:
-        if message is not None:
-            yield loads(message.value)
-        else:
-            break
