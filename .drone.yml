@@ -9,7 +9,6 @@ compose:
     net: host
     image: mesosphere/mesos-master:0.28.1
     environment:
-      - MESOS_IP=127.0.0.1
       - MESOS_ZK=zk://127.0.0.1:2181/mesos
       - MESOS_QUORUM=1
       - MESOS_CLUSTER=docker-compose
@@ -65,13 +64,13 @@ build:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - docker build -t lensa/epos:dev .
+      - docker build -t lensa/epos:latest .
 
   test:
-    image: lensa/epos:dev
+    image: lensa/epos:latest
     net: host
     environment:
-      - MESOS_MASTER=zk://localhost:2181/mesos
+      - MESOS_MASTER=zk://127.0.0.1:2181/mesos
       - ZOOKEEPER_HOST=localhost:2181
       - ZOOKEEPER_PATH=/usr/share/java
       - HDFS_HOST=localhost:8020
@@ -83,9 +82,6 @@ build:
       - export LIBPROCESS_IP=`hostname -I | cut -f1 -d" "`
       - export SPARK_LOCAL_IP=`hostname -I | cut -f1 -d" "`
       #- echo 'spark.jars.packages datastax:spark-cassandra-connector:1.6.0-M2-s_2.10' >> $SPARK_HOME/conf/spark-defaults.conf
-      - pip install -e .
-      - pip install pytest
-      #- sleep 123123123123
       - python setup.py test
 
 

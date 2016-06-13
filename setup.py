@@ -30,7 +30,7 @@ class PyTest(TestCommand):
 extras_require = {
     'backends': ['odo', 'pywebhdfs', 'pymongo', 'sqlalchemy', 'paramiko',
                  'cassandra-driver', 'pykafka'],
-    'mesos': ['dask.mesos', 'satyr', 'requests']
+    'mesos': ['dask.mesos>=0.2.1', 'satyr>=0.2', 'requests']
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
@@ -49,6 +49,5 @@ setup(name='epos',
       cmdclass={'test': PyTest},
       install_requires=extras_require['mesos'],
       extras_require=extras_require,
-      tests_require=['pytest'],
-      setup_requires=['pytest'],  # is it necessary?
+      tests_require=['pytest-mock', 'pytest'],
       zip_safe=False)

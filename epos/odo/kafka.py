@@ -31,7 +31,7 @@ class Kafka(object):
 
 @resource.register('kafka://.*')
 def resource_kafka(uri, kafka=None, **kwargs):
-    pattern = r'kafka://(?P<host>[\w.-]*)?(:(?P<port>\d+))/(?P<topic>[^\/]+)$'
+    pattern = r'kafka://(?P<host>[\w.-]*)?(:(?P<port>\d+))?/(?P<topic>[^\/]+)$'
     d = re.search(pattern, uri).groupdict()
     return Kafka(host=d['host'], port=d['port'], topic=d['topic'], kafka=kafka,
                  **kwargs)

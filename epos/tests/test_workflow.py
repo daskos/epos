@@ -1,5 +1,8 @@
+from __future__ import absolute_import, division, print_function
+
+import pytest
 import pandas as pd
-from dask_mesos import get
+from dask_mesos import MesosExecutor
 from epos import mesos, spark
 from epos.utils import MiB, GiB
 
@@ -13,15 +16,15 @@ def generate():
             ['e', 3, 520]]
 
 
-@mesos(docker='lensa/epos:dev', cpus=0.1, mem=128 * MiB)
+@mesos(docker='lensa/epos:latest', cpus=0.1, mem=128 * MiB)
 def summarize(data):
     df = pd.DataFrame(data, columns=['char', 'i', 'v'])
     summary = df.groupby('i').sum()
     return summary.to_dict(orient='records')
 
 
-@mesos(docker='lensa/epos:dev', cpus=0.1, mem=1 * GiB)
-@spark(master='mesos://localhost:5050', docker='lensa/epos:dev',
+@mesos(docker='lensa/epos:latest', cpus=0.1, mem=1 * GiB)
+@spark(master='mesos://localhost:5050', docker='lensa/epos:latest',
        driver_memory=512 * MiB, executor_memory=512 * MiB,
        python_worker_memory=256 * MiB,
        coarse=1, executor_cores=1)
@@ -30,18 +33,18 @@ def spark_maximum(sc, sqlctx, dcts):
     return rdd.map(lambda x: x['v']).max()
 
 
-@mesos(docker='lensa/epos:dev', cpus=0.1, mem=128 * MiB)
+@mesos(docker='lensa/epos:latest', cpus=0.1, mem=128 * MiB)
 def maximum(dcts):
     prices = map(lambda x: x['v'], dcts)
     return max(prices)
 
 
-@mesos(docker='lensa/epos:dev', cpus=0.1, mem=128 * MiB)
+@mesos(docker='lensa/epos:latest', cpus=0.1, mem=128 * MiB)
 def aggregate(first, second):
     return first + second
 
 
-@mesos(docker='lensa/epos:dev', cpus=0.1, mem=128 * MiB)
+@mesos(docker='lensa/epos:latest', cpus=0.1, mem=128 * MiB)
 def add(a, b):
     return a + b
 
@@ -56,9 +59,4 @@ def workflow():
 
 def test_result():
     result = workflow().compute()
-    assert result == 1880
-
-
-def test_mesos_result():
-    result = workflow().compute(get=get)
     assert result == 1880

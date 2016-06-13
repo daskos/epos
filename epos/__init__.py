@@ -16,9 +16,10 @@ def ignoring(*exceptions):
 
 
 from dask import delayed
+from functools import partial
 
 with ignoring(ImportError):
-    from dask_mesos import mesos
+    from dask_mesos import mesos, MesosExecutor
 
 with ignoring(ImportError):
     from .context import Lock, Persist
