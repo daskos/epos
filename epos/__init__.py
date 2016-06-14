@@ -1,10 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from contextlib import contextmanager
 import logging
+import pkg_resources as _pkg_resources
+from contextlib import contextmanager
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(relativeCreated)6d %(threadName)s %(message)s')
+logging.basicConfig(format='%(relativeCreated)6d %(threadName)s %(message)s')
+
+__version__ = _pkg_resources.get_distribution('satyr').version
 
 
 @contextmanager
