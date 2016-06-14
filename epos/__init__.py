@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 logging.basicConfig(format='%(relativeCreated)6d %(threadName)s %(message)s')
 
-__version__ = _pkg_resources.get_distribution('satyr').version
+__version__ = _pkg_resources.get_distribution('epos').version
 
 
 @contextmanager
