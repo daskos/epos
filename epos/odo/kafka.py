@@ -47,8 +47,8 @@ def kafka_to_iterator(dst, dshape=None, loads=json.loads, kafka=None, **kwargs):
 
 
 @append.register(Kafka, (list, Iterator))
-def append_iterator_to_kafka(dst, src, dshape=None, dumps=json.dumps, kafka=None,
-                             **kwargs):
+def append_iterator_to_kafka(dst, src, dshape=None, dumps=json.dumps,
+                             kafka=None, **kwargs):
     with dst.topic.get_producer(**kwargs) as producer:
         for item in src:
             producer.produce(dumps(item))
@@ -56,8 +56,8 @@ def append_iterator_to_kafka(dst, src, dshape=None, dumps=json.dumps, kafka=None
 
 
 @append.register(Kafka, object)  # anything else
-def append_object_to_kafka(dst, src, dshape=None, dumps=json.dumps, kafka=None,
-                           **kwargs):
+def append_object_to_kafka(dst, src, dshape=None, dumps=json.dumps,
+                           kafka=None, **kwargs):
     with dst.topic.get_producer(**kwargs) as producer:
         producer.produce(dumps(src))
     return kafka

@@ -2,31 +2,33 @@ from __future__ import absolute_import, division, print_function
 
 from functools import wraps
 
-import os
 import requests
 from toolz import curry
 from .execute import command
-from .utils import http_endpoint, envargs
+from .utils import http_endpoint
+from .context import envargs
 
 
-default_host = os.environ.get('CHRONOS_HOST', 'http://localhost:4400')
-endpoint = http_endpoint(host='{}/scheduler'.format(default_host))
+schedule_job = http_endpoint(resource='/scheduler/iso8601',
+                             method=requests.post)
+depend_job = http_endpoint(resource='/scheduler/dependency',
+                           method=requests.post)
 
-schedule_job = endpoint(resource='/iso8601', method=requests.post)
-depend_job = endpoint(resource='/dependency', method=requests.post)
+jobs = http_endpoint(resource='/scheduler/jobs', method=requests.get)
+start = http_endpoint(resource='/scheduler/job/{job}', method=requests.put)
+delete = http_endpoint(resource='/scheduler/job/{job}', method=requests.delete)
 
-jobs = endpoint(resource='/jobs', method=requests.get)
-start = endpoint(resource='/job/{job}', method=requests.put)
-delete = endpoint(resource='/job/{job}', method=requests.delete)
-
-destroy = endpoint(resource='/task/kill/{job}', method=requests.delete)
+destroy = http_endpoint(resource='/scheduler/task/kill/{job}',
+                        method=requests.delete)
 
 
 @curry
-@envargs(prefix='EPOS_CHRONOS_')
+@envargs(prefix='CHRONOS')
 def chronos(fn, name=None, cpus=0.1, mem=128, docker='lensa/epos',
             force_pull=False, schedule=None, parents=[], path='$PYTHONPATH',
-            uris=[], envs={}, retries=2, disabled=False, async=False):
+            uris=[], envs={}, retries=2, disabled=False, async=False,
+            host='localhost:4400'):
+    """Cronos job launcher"""
     envs = [{'name': k, 'value': v} for k, v in envs.items()]
     payload = {'name': fn.__name__,
                'cpus': str(cpus),
@@ -50,6 +52,6 @@ def chronos(fn, name=None, cpus=0.1, mem=128, docker='lensa/epos',
     @wraps(fn)
     def wrapper(*args, **kwargs):
         payload['command'] = command(fn, args, kwargs, path=path)
-        return schedule_job(payload=payload)
+        return schedule_job(host=host, payload=payload)
 
     return wrapper

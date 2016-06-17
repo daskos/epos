@@ -21,7 +21,7 @@ from dask import delayed
 from functools import partial
 
 with ignoring(ImportError):
-    from dask_mesos import mesos, MesosExecutor
+    from .mesos import mesos
 
 with ignoring(ImportError):
     from .context import Lock, Persist

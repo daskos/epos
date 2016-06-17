@@ -1,64 +1,64 @@
 from __future__ import print_function, absolute_import, division
 
-import pytest
+import os
 import time
+import pytest
+
 from epos.marathon import marathon, destroy, deployments, app, apps
 from satyr.utils import timeout
 
-# TODO skip if not hdfs
-# TODO skip if not marathon
+
+host = os.environ.get('MARATHON_HOST')
+pytestmark = pytest.mark.skipif(
+    not host, reason="MARATHON_HOST environment variable must be set")
 
 
-@pytest.fixture(scope='module', autouse=True)
+@pytest.yield_fixture(autouse=True)
 def destroy_apps():
-    for a in apps()['apps']:
-        destroy(id=a['id'])
+    try:
+        yield
+    finally:
+        for a in apps(host=host):
+            destroy(id=a['id'], host=host)
 
-    with timeout(15):
-        while len(deployments()):
-            time.sleep(.1)
+        with timeout(15):
+            while len(deployments(host=host)):
+                time.sleep(.1)
+
+    assert len(apps(host=host)) == 0
 
 
-def test_marathon_start():
+def test_marathon():
     uris = ['https://github.com/cloudpipe/cloudpickle/archive/v0.2.1.tar.gz']
     pythonpath = '$MESOS_SANDBOX/cloudpickle-0.2.1'
 
-    @marathon(docker=None, cpus=0.1, mem=64, path=pythonpath, uris=uris)
+    @marathon(docker=None, cpus=0.1, mem=64, path=pythonpath, uris=uris,
+              host=host)
     def test(a, b):
         while True:
             time.sleep(0.1)
             print('Slept 0.1s')
 
-    try:
-        test(1, 2)
-        with timeout(20):
-            while len(deployments()):
-                time.sleep(.1)
+    test(1, 2)
+    with timeout(20):
+        while len(deployments(host=host)):
+            time.sleep(.1)
 
-        result = app(id='test')
-        assert result['app']['tasksRunning'] == 1
-    finally:
-        destroy(id='test')
-
-    assert len(apps()['apps']) == 0
+    result = app(id='test', host=host)
+    assert result['tasksRunning'] == 1
 
 
-def test_marathon_docker_start():
-    @marathon(docker='lensa/epos:dev', cpus=0.1, mem=64)
+def test_marathon_docker():
+    @marathon(docker='lensa/epos:dev', cpus=0.1, mem=64, host=host)
     def docker(a, b):
         while True:
             time.sleep(0.1)
             print('Slept 0.1s')
 
-    try:
-        docker(1, 2)
-        with timeout(20):
-            while len(deployments()):
-                time.sleep(.1)
+    docker(1, 2)
+    with timeout(20):
+        while len(deployments(host=host)):
+            time.sleep(.1)
 
-        result = app(id='docker')
-        assert result['app']['tasksRunning'] == 1
-    finally:
-        destroy(id='docker')
-
-    assert len(apps()['apps']) == 0
+    result = app(id='docker', host=host)
+    assert result['tasksRunning'] == 1

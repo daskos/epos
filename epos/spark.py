@@ -6,20 +6,18 @@ from functools import wraps
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
 
-from .utils import envargs, MiB, GiB
+from .utils import MiB, GiB
+from .context import envargs
 
 
 @curry
-@envargs(prefix='EPOS_SPARK_')
+@envargs(prefix='SPARK')
 def spark(fn, name=None, master='local[*]', docker='lensa/epos', role='*',
           envs={}, uris=[], files=[], pyfiles=[], driver_memory=4*GiB,
           coarse=False, executor_cores=4, executor_memory=4*GiB,
           memory_overhead=None, python_worker_memory=512*MiB,
           log='ERROR', **opts):
-    """Decorator order matters!
-
-    Spark always comes after/below mesos.
-    """
+    """Spark context decorator"""
     try:
         memory_overhead = memory_overhead or (
             executor_cores * python_worker_memory + 0.1 * executor_memory)

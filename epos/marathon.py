@@ -1,29 +1,28 @@
 from __future__ import absolute_import, division, print_function
 
-import os
 import requests
 
+from operator import itemgetter
 from functools import wraps
 from toolz import curry
 
-from .utils import http_endpoint, envargs
+from .utils import http_endpoint
 from .execute import command
+from .context import envargs
 
 
-default_host = os.environ.get('MARATHON_HOST')
-endpoint = http_endpoint(host='{host}/v2'.format(host=default_host))
+start = http_endpoint(resource='/v2/apps', method=requests.post)
+destroy = http_endpoint(resource='/v2/apps/{id}', method=requests.delete)
+restart = http_endpoint(resource='/v2/apps/{id}/restart', method=requests.post)
 
-start = endpoint(resource='/apps', method=requests.post)
-destroy = endpoint(resource='/apps/{id}', method=requests.delete)
-restart = endpoint(resource='/apps/{id}/restart', method=requests.post)
+apps = http_endpoint(resource='/v2/apps', extract=itemgetter('apps'))
+tasks = http_endpoint(resource='/v2/apps/{app}/tasks',
+                      extract=itemgetter('tasks'))
+deployments = http_endpoint(resource='/v2/deployments')
 
-apps = endpoint(resource='/apps')
-tasks = endpoint(resource='/apps/{app}/tasks')
-deployments = endpoint(resource='/deployments')
-
-app = endpoint(resource='/apps/{id}')
-task = endpoint(resource='/apps/{app}/tasks/{id}')
-deployment = endpoint(resource='/deployments/{id}')
+app = http_endpoint(resource='/v2/apps/{id}', extract=itemgetter('app'))
+task = http_endpoint(resource='/v2/apps/{app}/tasks/{id}')
+deployment = http_endpoint(resource='/v2/deployments/{id}')
 
 
 def _parse_volumes(vols):
@@ -35,10 +34,11 @@ def _parse_volumes(vols):
 
 
 @curry
-@envargs(prefix='EPOS_MARATHON_')
-def marathon(fn, name=None, cpus=0.1, mem=128, instances=1, docker='lensa/epos',
-             path='$PYTHONPATH', envs={}, uris=[], volumes=[],
-             host=default_host):
+@envargs(prefix='MARATHON')
+def marathon(fn, name=None, cpus=0.1, mem=128, instances=1,
+             docker='lensa/epos', envs={}, uris=[], volumes=[],
+             path='$PYTHONPATH', host='localhost:8080'):
+    """Marathon job launcher"""
     payload = {
         'id': name or fn.__name__,
         'cpus': float(cpus),
@@ -55,6 +55,6 @@ def marathon(fn, name=None, cpus=0.1, mem=128, instances=1, docker='lensa/epos',
     @wraps(fn)
     def wrapper(*args, **kwargs):
         payload['cmd'] = command(fn, args, kwargs, path=path)
-        return start(payload=payload)
+        return start(host=host, payload=payload)
 
     return wrapper

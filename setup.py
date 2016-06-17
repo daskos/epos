@@ -43,11 +43,17 @@ setup(name='epos',
       maintainer_email='szucs.krisztian@gmail.com',
       license='BSD',
       keywords='task-scheduling parallelism mesos spark',
-      packages=['epos', 'epos.odo'],
+      packages=['epos', 'epos.odo', 'epos.cli'],
       long_description=(open('README.md').read() if exists('README.md')
                         else ''),
       cmdclass={'test': PyTest},
-      install_requires=extras_require['mesos'],
+      install_requires=extras_require['mesos'] + ['click'],
       extras_require=extras_require,
       tests_require=['pytest-mock', 'pytest'],
+      entry_points='''
+          [console_scripts]
+          epos=epos.cli:epos
+          chronos=epos.cli:chronos
+          marathon=epos.cli:marathon
+      ''',
       zip_safe=False)

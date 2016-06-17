@@ -4,8 +4,6 @@ import os
 import pytest
 
 from collections import Iterator
-from contextlib import contextmanager
-from concurrent.futures import ThreadPoolExecutor
 
 from epos.odo import Kafka
 from odo import resource, odo

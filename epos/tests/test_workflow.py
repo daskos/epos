@@ -1,10 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import pytest
 import pandas as pd
-from dask_mesos import MesosExecutor
 from epos import mesos, spark
 from epos.utils import MiB, GiB
+
+
+master = os.environ.get('MESOS_MASTER')
+pytestmark = pytest.mark.skipif(
+    not master, reason='MESOS_MASTER environment variable must be set')
 
 
 @mesos
@@ -24,7 +29,7 @@ def summarize(data):
 
 
 @mesos(docker='lensa/epos:latest', cpus=0.1, mem=1 * GiB)
-@spark(master='mesos://localhost:5050', docker='lensa/epos:latest',
+@spark(master=master, docker='lensa/epos:latest',
        driver_memory=512 * MiB, executor_memory=512 * MiB,
        python_worker_memory=256 * MiB,
        coarse=1, executor_cores=1)
