@@ -96,6 +96,12 @@ def test_local_master():
         rdd = sc.parallelize(lst)
         return rdd.sum()
 
+    @spark(master='local[1]', driver_memory=512, executor_memory=512,
+           python_worker_memory=256)
+    def job2(sc, sql, lst):
+        rdd = sc.parallelize(lst)
+        return rdd.sum()
+
     lst = range(100)
 
     assert job(lst) == sum(lst)

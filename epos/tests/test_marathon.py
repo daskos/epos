@@ -6,7 +6,7 @@ import pytest
 
 from epos.marathon import marathon, destroy, deployments, app, apps
 from satyr.utils import timeout
-
+from epos.context import _globals
 
 host = os.environ.get('MARATHON_HOST')
 pytestmark = pytest.mark.skipif(
@@ -39,26 +39,26 @@ def test_marathon():
             time.sleep(0.1)
             print('Slept 0.1s')
 
-    test(1, 2)
+    mid = test(1, 2)
     with timeout(20):
         while len(deployments(host=host)):
             time.sleep(.1)
 
-    result = app(id='test', host=host)
+    result = app(id=mid, host=host)
     assert result['tasksRunning'] == 1
 
 
 def test_marathon_docker():
-    @marathon(docker='lensa/epos:dev', cpus=0.1, mem=64, host=host)
+    @marathon(docker='lensa/epos', cpus=0.1, mem=64, host=host)
     def docker(a, b):
         while True:
             time.sleep(0.1)
             print('Slept 0.1s')
 
-    docker(1, 2)
+    mid = docker(1, 2)
     with timeout(20):
         while len(deployments(host=host)):
             time.sleep(.1)
 
-    result = app(id='docker', host=host)
+    result = app(id=mid, host=host)
     assert result['tasksRunning'] == 1

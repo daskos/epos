@@ -20,16 +20,14 @@ def ignoring(*exceptions):
 from dask import delayed
 from functools import partial
 
+from .odo import odo
+from .context import set_options, options, envargs
+from .chronos import chronos
+from .marathon import marathon
+
+
 with ignoring(ImportError):
     from .mesos import mesos
 
 with ignoring(ImportError):
-    from .context import Lock, Persist
-
-with ignoring(ImportError):
     from .spark import spark
-
-
-from .odo import odo
-from .chronos import chronos
-from .marathon import marathon

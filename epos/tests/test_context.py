@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import pytest
 from toolz import curry
-from epos.context import set_options, _globals, envargs
+from epos.context import set_options, _globals, envargs, options
 
 
 def calc(a, b, c='c', d='d'):
@@ -34,6 +34,23 @@ def test_set_options_context_manger():
         assert _globals['foo'] == 'baz'
     finally:
         del _globals['foo']
+
+
+@pytest.mark.parametrize('calc', [calc, calcie])
+def test_options(calc):
+    fn = options(calc, data={'c': 'C'})
+    assert fn('a', 'b') == 'abCd'
+    assert fn('b', 'a') == 'baCd'
+
+    fn = options(calc, data={'b': 'B'})
+    assert fn('a') == 'aBcd'
+    assert fn('a', 'b') == 'abcd'
+
+    fn = options(calc, data={'b': 'B', 'd': 'D'})
+    assert fn('a') == 'aBcD'
+    assert fn('a', 'b') == 'abcD'
+    assert fn('a', d='d') == 'aBcd'
+    assert fn('a', b='b', c='/', d='d') == 'ab/d'
 
 
 @pytest.mark.parametrize('calc', [calc, calcie])
@@ -101,3 +118,34 @@ def test_set_options_envargs():
         assert fn('a', 'b') == 'abcD'
         assert fn('a', d='d') == 'aBcd'
         assert fn('a', b='b', c='/', d='d') == 'ab/d'
+
+
+def test_set_options_key():
+    data = {'b': 'B', 'd': 'D'}
+
+    with set_options(test=data):
+        fn = options(calc, key='test')
+
+        assert fn('a') == 'aBcD'
+        assert fn('a', 'b') == 'abcD'
+        assert fn('a', d='d') == 'aBcd'
+        assert fn('a', b='b', c='/', d='d') == 'ab/d'
+
+
+def test_set_options_default_key():
+    data = {'b': 'B', 'd': 'D'}
+
+    with set_options(calc=data):
+        fn = options(calc)
+
+        assert fn('a') == 'aBcD'
+        assert fn('a', 'b') == 'abcD'
+        assert fn('a', d='d') == 'aBcd'
+        assert fn('a', b='b', c='/', d='d') == 'ab/d'
+
+
+def test_doesnt_pollute():
+    fn = options(calc)
+    assert fn('a', 'b') == 'abcd'
+    assert fn('a', '/', d='/') == 'a/c/'
+    assert fn('a', 'b', c='/') == 'ab/d'

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import inspect
 from copy import copy
 from toolz import curry
-from functools import wraps
+from six import wraps
 from collections import defaultdict
 
 _globals = defaultdict(lambda: None)
@@ -49,21 +49,28 @@ def envargs(fn, prefix='', envs={}):
     envs = envs or _globals['envs'] or {}
     if len(prefix):
         prefix += '_'  # MARATHON => MARATHON_
+    envs = {k[len(prefix):].lower(): v
+            for k, v in envs.items() if k.startswith(prefix)}
+    return options(fn, data=envs)
+
+
+@curry
+def options(fn, key=None, data={}):
+    key = key or fn.__name__
     try:
         spec = inspect.getargspec(fn)
     except TypeError:  # curried
         spec = inspect.getargspec(fn.func)
-    envs = {k[len(prefix):].lower(): v
-            for k, v in envs.items() if k.startswith(prefix)}
-    if not spec.keywords:
-        envs = {k: v for k, v in envs.items() if k in spec.args}
     defaults = spec.defaults or []
-    defs = dict(zip(spec.args[-len(defaults):], defaults))
-    defs.update(envs)
+    kwds = dict(zip(spec.args[-len(defaults):], defaults))
 
-    @wraps(fn)
+    @wraps(fn, assigned=('__name__', '__doc__'))
     def closure(*args, **kwargs):
-        params = copy(defs)
+        envs = data or _globals[key] or {}  # get values just before calling
+        if not spec.keywords:  # if fn doesn't have kwargs
+            envs = {k: v for k, v in envs.items() if k in spec.args}
+        params = copy(kwds)
+        params.update(envs)
         params.update(zip(spec.args[:len(args)], args))
         params.update(kwargs)
         return fn(**params)

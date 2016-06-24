@@ -7,15 +7,15 @@ from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
 
 from .utils import MiB, GiB
-from .context import envargs
+from .context import options
 
 
 @curry
-@envargs(prefix='SPARK')
+@options
 def spark(fn, name=None, master='local[*]', docker='lensa/epos', role='*',
-          envs={}, uris=[], files=[], pyfiles=[], driver_memory=4*GiB,
-          coarse=False, executor_cores=4, executor_memory=4*GiB,
-          memory_overhead=None, python_worker_memory=512*MiB,
+          envs={}, uris=[], files=[], pyfiles=[], driver_memory=4 * GiB,
+          coarse=False, executor_cores=4, executor_memory=4 * GiB,
+          memory_overhead=None, python_worker_memory=512 * MiB,
           log='ERROR', **opts):
     """Spark context decorator"""
     try:
@@ -43,7 +43,7 @@ def spark(fn, name=None, master='local[*]', docker='lensa/epos', role='*',
         # https://github.com/pytoolz/toolz/issues/288
         raise Exception(repr(e))
 
-    @wraps(fn)
+    @wraps(fn, assigned=('__name__', '__doc__'))
     def closure(*args, **kwargs):
         conf = SparkConf()
         conf.setMaster(master)

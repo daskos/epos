@@ -38,10 +38,10 @@ def test_chronos():
     def test(a, b):
         print('Test function')
 
-    test(1, 2)  # add job
+    cid = test(1, 2)  # add job
     assert jobs()[0]['name'] == 'test'
 
-    start(job='test')
+    start(job=cid)
 
     with timeout(20):
         while not jobs()[0]['successCount']:
@@ -56,11 +56,11 @@ def test_chronos_docker():
     def test(a, b):
         print('Test function')
 
-    test(1, 2)  # add job
+    cid = test(1, 2)  # add job
 
-    assert jobs(host=host)[0]['name'] == 'test'
+    assert jobs(host=host)[0]['name'] == cid
 
-    start(job='test', host=host)
+    start(job=cid, host=host)
 
     with timeout(20):
         while not jobs(host=host)[0]['successCount']:

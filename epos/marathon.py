@@ -3,12 +3,13 @@ from __future__ import absolute_import, division, print_function
 import requests
 
 from operator import itemgetter
-from functools import wraps
+from six import wraps
 from toolz import curry
+from dask.delayed import tokenize
 
 from .utils import http_endpoint
 from .execute import command
-from .context import envargs
+from .context import options
 
 
 start = http_endpoint(resource='/v2/apps', method=requests.post)
@@ -34,13 +35,12 @@ def _parse_volumes(vols):
 
 
 @curry
-@envargs(prefix='MARATHON')
+@options
 def marathon(fn, name=None, cpus=0.1, mem=128, instances=1,
              docker='lensa/epos', envs={}, uris=[], volumes=[],
              path='$PYTHONPATH', host='localhost:8080'):
     """Marathon job launcher"""
     payload = {
-        'id': name or fn.__name__,
         'cpus': float(cpus),
         'mem': float(mem),
         'instances': int(instances),
@@ -52,9 +52,12 @@ def marathon(fn, name=None, cpus=0.1, mem=128, instances=1,
         if volumes:
             payload['container']['volumes'] = _parse_volumes(volumes)
 
-    @wraps(fn)
+    @wraps(fn, assigned=('__name__', '__doc__'))
     def wrapper(*args, **kwargs):
+        mid = '{}-{}'.format(name or fn.__name__, tokenize(*args, **kwargs))
+        payload['id'] = mid
         payload['cmd'] = command(fn, args, kwargs, path=path)
-        return start(host=host, payload=payload)
+        start(host=host, payload=payload)
+        return mid
 
     return wrapper

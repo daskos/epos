@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from dask_mesos import mesos as mesos_delayed
 
-from .context import envargs
+from .context import options, set_options
 
 
-mesos = envargs(mesos_delayed, prefix='MESOS')
+set_options(mesos=dict(docker='lensa/epos'))
+mesos = options(mesos_delayed)

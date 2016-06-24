@@ -1,12 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-from functools import wraps
+from six import wraps
 
 import requests
 from toolz import curry
+from dask.delayed import tokenize
+
 from .execute import command
 from .utils import http_endpoint
-from .context import envargs
+from .context import options
 
 
 schedule_job = http_endpoint(resource='/scheduler/iso8601',
@@ -23,15 +25,14 @@ destroy = http_endpoint(resource='/scheduler/task/kill/{job}',
 
 
 @curry
-@envargs(prefix='CHRONOS')
+@options
 def chronos(fn, name=None, cpus=0.1, mem=128, docker='lensa/epos',
             force_pull=False, schedule=None, parents=[], path='$PYTHONPATH',
             uris=[], envs={}, retries=2, disabled=False, async=False,
             host='localhost:4400'):
     """Cronos job launcher"""
     envs = [{'name': k, 'value': v} for k, v in envs.items()]
-    payload = {'name': fn.__name__,
-               'cpus': str(cpus),
+    payload = {'cpus': str(cpus),
                'async': bool(async),
                'mem': str(mem),
                'disabled': disabled,
@@ -49,9 +50,12 @@ def chronos(fn, name=None, cpus=0.1, mem=128, docker='lensa/epos',
                                 'image': str(docker),
                                 'forcePullImage': bool(force_pull)}
 
-    @wraps(fn)
+    @wraps(fn, assigned=('__name__', '__doc__'))
     def wrapper(*args, **kwargs):
+        cid = '{}-{}'.format(name or fn.__name__, tokenize(*args, **kwargs))
+        payload['name'] = cid
         payload['command'] = command(fn, args, kwargs, path=path)
-        return schedule_job(host=host, payload=payload)
+        schedule_job(host=host, payload=payload)
+        return cid
 
     return wrapper
