@@ -48,7 +48,7 @@ def epos(cpus, mem, docker, uris, mesos_master, marathon_host, chronos_host,
     for key in ('mesos', 'marathon', 'chronos'):
         _globals[key] = copy(commons)
 
+    _globals['mesos']['zk'] = zookeeper_host
     _globals['mesos']['master'] = mesos_master
     _globals['chronos']['host'] = chronos_host
     _globals['marathon']['host'] = marathon_host
-    _globals['zookeeper']['host'] = zookeeper_host
