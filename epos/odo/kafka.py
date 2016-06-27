@@ -41,7 +41,7 @@ def resource_kafka(uri, kafka=None, **kwargs):
 def kafka_to_iterator(dst, dshape=None, loads=json.loads, kafka=None, **kwargs):
     kwargs.pop('excluded_edges', None)
     kwargs.pop('chunksize', None)
-    consumer = dst.topic.get_simple_consumer(**kwargs)
+    consumer = dst.topic.get_balanced_consumer(**kwargs)
     for message in consumer:
         yield loads(message.value)
 

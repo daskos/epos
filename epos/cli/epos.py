@@ -29,7 +29,10 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix='EPOS')
               help='Marathon API host with port in format marathon.host:8080')
 @click.option('--chronos-host', default='localhost:4400',
               help='Chronos API host with port in format chronos.host:4400')
-def epos(cpus, mem, docker, uris, mesos_master, marathon_host, chronos_host):
+@click.option('--zookeeper-host', default='localhost:2181',
+              help='Zookeeper host with port in format zookeeper.host:2181')
+def epos(cpus, mem, docker, uris, mesos_master, marathon_host, chronos_host,
+         zookeeper_host):
     """Epos
 
     DAG Workflows like epic poems via Mesos, Marathon, Chronos, Spark, Dask
@@ -48,3 +51,4 @@ def epos(cpus, mem, docker, uris, mesos_master, marathon_host, chronos_host):
     _globals['mesos']['master'] = mesos_master
     _globals['chronos']['host'] = chronos_host
     _globals['marathon']['host'] = marathon_host
+    _globals['zookeeper']['host'] = zookeeper_host

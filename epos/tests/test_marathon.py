@@ -6,7 +6,7 @@ import pytest
 
 from epos.marathon import marathon, destroy, deployments, app, apps
 from satyr.utils import timeout
-from epos.context import _globals
+
 
 host = os.environ.get('MARATHON_HOST')
 pytestmark = pytest.mark.skipif(
