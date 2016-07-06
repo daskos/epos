@@ -105,10 +105,11 @@ def test_local_master():
     lst = range(100)
 
     assert job(lst) == sum(lst)
+    assert job2(lst) == sum(lst)
 
 
 def test_mesos_master():
-    @spark(master='mesos://localhost:5050', docker='lensa/epos:dev',
+    @spark(master='mesos://localhost:5050', docker='lensa/epos',
            driver_memory=512, executor_memory=512,
            python_worker_memory=256,
            coarse=1, executor_cores=1)

@@ -2,8 +2,23 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import pytest
+import cloudpickle as cp
+from six import wraps
 from toolz import curry
 from epos.context import set_options, _globals, envargs, options
+
+
+@curry
+@options
+def decorator(fn, a='A', b='B', c='C'):
+    @wraps(fn, assigned=('__name__', '__doc__'))
+    def wrapper(d):
+        return fn(a, b, c, d)
+    return wrapper
+
+
+def decorated(a, b, c, d):
+    return (a, b, c, d)
 
 
 def calc(a, b, c='c', d='d'):
@@ -149,3 +164,20 @@ def test_doesnt_pollute():
     assert fn('a', 'b') == 'abcd'
     assert fn('a', '/', d='/') == 'a/c/'
     assert fn('a', 'b', c='/') == 'ab/d'
+
+
+def test_pickling():
+    data = {'b': 'B', 'd': 'D'}
+
+    with set_options(calc=data):
+        fn = options(calc)
+        pickled = cp.dumps(fn)
+
+    assert _globals['calc'] == None
+    func = cp.loads(pickled)
+    assert _globals['calc'] == None
+
+    assert func('a') == 'aBcD'
+    assert func('a', 'b') == 'abcD'
+    assert func('a', d='d') == 'aBcd'
+    assert func('a', b='b', c='/', d='d') == 'ab/d'

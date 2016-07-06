@@ -1,10 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
+from dask import delayed
 from copy import copy
 from toolz import curry
 from six import wraps
+from functools import partial
 from collections import defaultdict
+#from peak.util.proxies import CallbackProxy
+from lazy_object_proxy import Proxy
 
 _globals = defaultdict(lambda: None)
 
@@ -44,14 +48,27 @@ class set_options(object):
         _globals.update(self.old)
 
 
+def getter(name, k, d):
+    data = _globals[name] or {}
+    return data.get(k, d)
+
+
+# TODO: change used Proxy module, prevent required typecasts when using the
+# proxied arguments
+
 @curry
-def envargs(fn, prefix='', envs={}):
-    envs = envs or _globals['envs'] or {}
-    if len(prefix):
-        prefix += '_'  # MARATHON => MARATHON_
-    envs = {k[len(prefix):].lower(): v
-            for k, v in envs.items() if k.startswith(prefix)}
-    return options(fn, data=envs)
+def lazyargs(fn):
+    try:
+        spec = inspect.getargspec(fn)
+    except TypeError:
+        spec = inspect.getargspec(fn.func)
+    defaults = spec.defaults or tuple()
+    args = spec.args[-len(defaults):]
+    params = [partial(getter, name=fn.__name__, k=args[k], d=d)
+              for k, d in enumerate(defaults)]
+    #fn = wraps(fn, assigned=('__name__', '__doc__'))
+    fn.__defaults__ = tuple(map(Proxy, params))
+    return fn
 
 
 @curry
@@ -66,6 +83,7 @@ def options(fn, key=None, data={}):
 
     @wraps(fn, assigned=('__name__', '__doc__'))
     def closure(*args, **kwargs):
+        # def callback():
         envs = data or _globals[key] or {}  # get values just before calling
         if not spec.keywords:  # if fn doesn't have kwargs
             envs = {k: v for k, v in envs.items() if k in spec.args}
@@ -74,5 +92,16 @@ def options(fn, key=None, data={}):
         params.update(zip(spec.args[:len(args)], args))
         params.update(kwargs)
         return fn(**params)
+        # return ProxyCallback(callback)
 
     return closure
+
+
+@curry
+def envargs(fn, prefix='', envs={}):
+    envs = envs or _globals['envs'] or {}
+    if len(prefix):
+        prefix += '_'  # MARATHON => MARATHON_
+    envs = {k[len(prefix):].lower(): v
+            for k, v in envs.items() if k.startswith(prefix)}
+    return options(fn, data=envs)

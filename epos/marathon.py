@@ -6,10 +6,11 @@ from operator import itemgetter
 from six import wraps
 from toolz import curry
 from dask.delayed import tokenize
+from dask import delayed
 
 from .utils import http_endpoint
 from .execute import command
-from .context import options
+from .context import lazyargs
 
 
 start = http_endpoint(resource='/v2/apps', method=requests.post)
@@ -35,25 +36,25 @@ def _parse_volumes(vols):
 
 
 @curry
-@options
+@lazyargs
 def marathon(fn, name=None, cpus=0.1, mem=128, instances=1,
              docker='lensa/epos', envs={}, uris=[], volumes=[],
              path='$PYTHONPATH', host='localhost:8080'):
     """Marathon job launcher"""
-    payload = {
-        'cpus': float(cpus),
-        'mem': float(mem),
-        'instances': int(instances),
-        'env': dict(envs),
-        'uris': list(uris)
-    }
-    if docker:
-        payload['container'] = {'docker': {'image': str(docker)}}
-        if volumes:
-            payload['container']['volumes'] = _parse_volumes(volumes)
-
     @wraps(fn, assigned=('__name__', '__doc__'))
     def wrapper(*args, **kwargs):
+        payload = {
+            'cpus': float(cpus),
+            'mem': float(mem),
+            'instances': int(instances),
+            'env': dict(envs),
+            'uris': list(uris)
+        }
+        if docker:
+            payload['container'] = {'docker': {'image': str(docker)}}
+            if volumes:
+                payload['container']['volumes'] = _parse_volumes(volumes)
+
         mid = '{}-{}'.format(name or fn.__name__, tokenize(*args, **kwargs))
         payload['id'] = mid
         payload['cmd'] = command(fn, args, kwargs, path=path)

@@ -21,7 +21,7 @@ from dask import delayed
 from functools import partial
 
 from .odo import odo
-from .context import set_options, options, envargs
+from .context import set_options, options, envargs, _globals
 from .chronos import chronos
 from .marathon import marathon
 

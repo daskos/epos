@@ -4,6 +4,7 @@ import os
 import time
 import pytest
 
+from epos.context import set_options
 from epos.marathon import marathon, destroy, deployments, app, apps
 from satyr.utils import timeout
 
@@ -49,7 +50,9 @@ def test_marathon():
 
 
 def test_marathon_docker():
-    @marathon(docker='lensa/epos', cpus=0.1, mem=64, host=host)
+    print(marathon.func.__defaults__)
+
+    @marathon(cpus=0.1, mem=64, host=host)
     def docker(a, b):
         while True:
             time.sleep(0.1)
