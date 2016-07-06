@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import inspect
-from dask import delayed
 from copy import copy
 from toolz import curry
 from six import wraps

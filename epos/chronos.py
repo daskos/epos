@@ -4,7 +4,7 @@ from six import wraps
 
 import requests
 from toolz import curry
-from dask.delayed import tokenize, delayed
+from dask.delayed import tokenize
 
 from .execute import command
 from .utils import http_endpoint

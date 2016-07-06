@@ -17,11 +17,8 @@ def ignoring(*exceptions):
         pass
 
 
-from dask import delayed
-from functools import partial
-
 from .odo import odo
-from .context import set_options, options, envargs, _globals
+from .context import set_options, options, lazyargs, _globals
 from .chronos import chronos
 from .marathon import marathon
 

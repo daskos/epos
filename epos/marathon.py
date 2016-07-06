@@ -6,7 +6,6 @@ from operator import itemgetter
 from six import wraps
 from toolz import curry
 from dask.delayed import tokenize
-from dask import delayed
 
 from .utils import http_endpoint
 from .execute import command
