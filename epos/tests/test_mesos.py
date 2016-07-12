@@ -34,9 +34,8 @@ def test_without_arguments():
 
 
 def test_forwarding_context():
-    with set_options(testkey={'test': 'val'},
-                     mesos={'cpus': 15}):
-        value = proxy('testkey')
+    value = proxy('testkey')
+    with set_options(testkey={'test': 'val'}):
         assert value.compute() == {'test': 'val'}
 
     with set_options(testkey1={'test1': 'val'}):

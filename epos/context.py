@@ -6,14 +6,14 @@ from toolz import curry
 from six import wraps
 from functools import partial
 from collections import defaultdict
-#from peak.util.proxies import CallbackProxy
-from lazy_object_proxy import Proxy
+
+from .lazy import Proxy
 
 _globals = defaultdict(lambda: None)
 
 
 class set_options(object):
-    """ Set global state within controled context
+    """Set global state within controled context
 
     This lets you specify various global settings in a tightly controlled with
     block
@@ -52,21 +52,21 @@ def getter(name, k, d):
     return data.get(k, d)
 
 
-# TODO: change used Proxy module, prevent required typecasts when using the
-# proxied arguments
-
 @curry
 def lazyargs(fn):
     try:
         spec = inspect.getargspec(fn)
+        func = fn
     except TypeError:
         spec = inspect.getargspec(fn.func)
+        func = fn.func
+
     defaults = spec.defaults or tuple()
     args = spec.args[-len(defaults):]
     params = [partial(getter, name=fn.__name__, k=args[k], d=d)
               for k, d in enumerate(defaults)]
-    #fn = wraps(fn, assigned=('__name__', '__doc__'))
-    fn.__defaults__ = tuple(map(Proxy, params))
+    # fn = wraps(fn, assigned=('__name__', '__doc__'))
+    func.__defaults__ = tuple(map(Proxy, params))
     return fn
 
 

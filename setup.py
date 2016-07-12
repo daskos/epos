@@ -31,7 +31,7 @@ extras_require = {
     'backends': ['odo', 'pywebhdfs', 'pymongo', 'sqlalchemy', 'paramiko',
                  'cassandra-driver', 'pykafka'],
     'mesos': ['dask.mesos>=0.2.1', 'satyr>=0.2'],
-    'core': ['click', 'tabulate', 'requests', 'dask', 'lazy-object-proxy']
+    'core': ['click', 'tabulate', 'requests', 'dask']
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
