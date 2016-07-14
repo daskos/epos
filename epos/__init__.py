@@ -22,7 +22,6 @@ from .context import set_options, options, lazyargs, _globals
 from .chronos import chronos
 from .marathon import marathon
 
-
 with ignoring(ImportError):
     from .mesos import mesos
 

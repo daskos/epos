@@ -6,6 +6,7 @@ from toolz import curry
 from six import wraps
 from functools import partial
 from collections import defaultdict
+from cloudpickle import CloudPickler
 
 from .lazy import Proxy
 
@@ -48,8 +49,7 @@ class set_options(object):
 
 
 def getter(name, k, d):
-    data = _globals[name] or {}
-    return data.get(k, d)
+    return _globals.get(name, {}).get(k, d)
 
 
 @curry
@@ -82,7 +82,6 @@ def options(fn, key=None, data={}):
 
     @wraps(fn, assigned=('__name__', '__doc__'))
     def closure(*args, **kwargs):
-        # def callback():
         envs = data or _globals[key] or {}  # get values just before calling
         if not spec.keywords:  # if fn doesn't have kwargs
             envs = {k: v for k, v in envs.items() if k in spec.args}
@@ -91,7 +90,6 @@ def options(fn, key=None, data={}):
         params.update(zip(spec.args[:len(args)], args))
         params.update(kwargs)
         return fn(**params)
-        # return ProxyCallback(callback)
 
     return closure
 
@@ -104,3 +102,10 @@ def envargs(fn, prefix='', envs={}):
     envs = {k[len(prefix):].lower(): v
             for k, v in envs.items() if k.startswith(prefix)}
     return options(fn, data=envs)
+
+
+def inject_addons(self):
+    self.save_reduce(lambda opts: set_options(**opts), (_globals,))
+
+# register reducer to auto pickle _globals configuration
+CloudPickler.inject_addons = inject_addons

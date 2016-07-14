@@ -51,7 +51,7 @@ def test_chronos():
 
 
 def test_chronos_docker():
-    @chronos(schedule='R0/2015-01-01T20:00Z/PT1M', docker='lensa/epos:dev',
+    @chronos(schedule='R0/2015-01-01T20:00Z/PT1M', docker='lensa/epos',
              cpus=0.1, mem=128, host=host)
     def test(a, b):
         print('Test function')
@@ -62,7 +62,7 @@ def test_chronos_docker():
 
     start(job=cid, host=host)
 
-    with timeout(20):
+    with timeout(60):
         while not jobs(host=host)[0]['successCount']:
             time.sleep(.1)
 

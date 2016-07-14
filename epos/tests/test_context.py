@@ -1,11 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import epos
 import pytest
 import cloudpickle as cp
 from six import wraps
 from toolz import curry
-from epos.context import set_options, _globals, envargs, options
+from epos.context import set_options, _globals, envargs, options, lazyargs
 
 
 @curry
@@ -66,6 +67,31 @@ def test_options(calc):
     assert fn('a', 'b') == 'abcD'
     assert fn('a', d='d') == 'aBcd'
     assert fn('a', b='b', c='/', d='d') == 'ab/d'
+
+
+def test_lazyargs():
+    @lazyargs
+    def c1(a, b, c='c', d='d'):
+        return a + b + c + d
+
+    @lazyargs
+    @curry
+    def c2(a, b, c='c', d='d'):
+        return a + b + c + d
+
+    with set_options(c1={'c': 'C'}, c2={'c': 'C'}):
+        assert c1('a', 'b') == 'abCd'
+        assert c1('b', 'a') == 'baCd'
+        assert c2('a', 'b') == 'abCd'
+        assert c2('b', 'a') == 'baCd'
+
+    with set_options(c1={'c': 'C', 'd': 'D'}, c2={'c': 'C', 'd': 'D'}):
+        assert c1('a', 'b') == 'abCD'
+        assert c1('a', b='b', d='d') == 'abCd'
+        assert c1('a', b='b', c='/', d='d') == 'ab/d'
+        assert c2('a', 'b') == 'abCD'
+        assert c2('a', b='b', d='d') == 'abCd'
+        assert c2('a', b='b', c='/', d='d') == 'ab/d'
 
 
 @pytest.mark.parametrize('calc', [calc, calcie])
@@ -166,18 +192,14 @@ def test_doesnt_pollute():
     assert fn('a', 'b', c='/') == 'ab/d'
 
 
-def test_pickling():
-    data = {'b': 'B', 'd': 'D'}
+def test_pickling_globals():
+    with set_options(pickler={'test': 'value', 'strange': 'thiiing'}):
+        dumped = cp.dumps(epos, protocol=0)
 
-    with set_options(calc=data):
-        fn = options(calc)
-        pickled = cp.dumps(fn)
+    assert 'thiiing' in dumped
+    assert 'pickler' in dumped
+    assert _globals['pickler'] is None
 
-    assert _globals['calc'] == None
-    func = cp.loads(pickled)
-    assert _globals['calc'] == None
-
-    assert func('a') == 'aBcD'
-    assert func('a', 'b') == 'abcD'
-    assert func('a', d='d') == 'aBcd'
-    assert func('a', b='b', c='/', d='d') == 'ab/d'
+    cp.loads(dumped)
+    assert _globals['pickler']['test'] == 'value'
+    assert _globals['pickler']['strange'] == 'thiiing'

@@ -1,5 +1,10 @@
 """Ported from https://github.com/ionelmc/python-lazy-object-proxy"""
 
+
+# uncommented __call__ and __iter__
+# TODO: maybe use the implementation above and
+# satyr.proxies.messages.Map.__setattr__ should check __factory__ attribute
+
 import sys
 import operator
 
@@ -13,19 +18,19 @@ def with_metaclass(meta, *bases):
 
 
 def identity(obj):
-    return obj
+    return Proxy(obj)
 
 
-class cached_property(object):
+# class cached_property(object):
 
-    def __init__(self, func):
-        self.func = func
+#     def __init__(self, func):
+#         self.func = func
 
-    def __get__(self, obj, cls):
-        if obj is None:
-            return self
-        value = obj.__dict__[self.func.__name__] = self.func(obj)
-        return value
+#     def __get__(self, obj, cls):
+#         if obj is None:
+#             return self
+#         value = obj.__dict__[self.func.__name__] = self.func(obj)
+#         return value
 
 
 def make_proxy_method(code):
@@ -91,7 +96,8 @@ class Proxy(with_metaclass(_ProxyMetaType)):
     def __init__(self, factory):
         self.__dict__['__factory__'] = factory
 
-    @cached_property
+    #@cached_property
+    @property
     def __wrapped__(self):
         self = self.__dict__
         if '__factory__' in self:
@@ -264,7 +270,7 @@ class Proxy(with_metaclass(_ProxyMetaType)):
     #    return self.__wrapped__(*args, **kwargs)
 
     def __reduce__(self):
-        return identity, (self.__wrapped__,)
+        return identity, (self.__factory__,)
 
     def __reduce_ex__(self, protocol):
-        return identity, (self.__wrapped__,)
+        return identity, (self.__factory__,)
