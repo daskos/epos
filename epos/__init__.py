@@ -1,10 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-import logging
 import pkg_resources as _pkg_resources
 from contextlib import contextmanager
 
-logging.basicConfig(format='%(relativeCreated)6d %(threadName)s %(message)s')
 
 __version__ = _pkg_resources.get_distribution('epos').version
 
