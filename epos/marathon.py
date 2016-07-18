@@ -37,8 +37,8 @@ def _parse_volumes(vols):
 @curry
 @lazyargs
 def marathon(fn, name=None, cpus=0.1, mem=128, instances=1,
-             docker='lensa/epos', envs={}, uris=[], volumes=[],
-             path='$PYTHONPATH', host='localhost:8080'):
+             docker='lensa/epos', force_pull=False, envs={}, uris=[],
+             volumes=[], path='$PYTHONPATH', host='localhost:8080'):
     """Marathon job launcher"""
     @wraps(fn, assigned=('__name__', '__doc__'))
     def wrapper(*args, **kwargs):
@@ -50,8 +50,10 @@ def marathon(fn, name=None, cpus=0.1, mem=128, instances=1,
             'uris': list(uris)
         }
         if docker:
-            payload['container'] = {'docker': {'image': str(docker),
-                                               'forcePullImage': True}}
+            payload['container'] = {'docker': {
+                'image': str(docker),
+                'forcePullImage': bool(force_pull)}
+            }
             if volumes:
                 payload['container']['volumes'] = _parse_volumes(volumes)
 

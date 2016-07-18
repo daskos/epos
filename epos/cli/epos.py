@@ -17,9 +17,12 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix='EPOS')
 @click.option('--mem',
               help=('Default amount of memory allocated for mesos jobs; '
                     'formats 128m or 1.2g'))
-@click.option('--docker',
+@click.option('--docker', default='lensa/epos',
               help=('Default docker images used by mesos, marathon and chronos'
                     'jobs'))
+@click.option('--force-pull', type=bool, default=False,
+              help=('Dorce pull docker images used by mesos, marathon and '
+                    'chronos jobs'))
 @click.option('--uris', '-u', multiple=True,
               help='Mesos uris to be fetched by executors')
 @click.option('--mesos-master', default='localhost:5050',
@@ -31,8 +34,8 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix='EPOS')
               help='Chronos API host with port in format chronos.host:4400')
 @click.option('--zookeeper-host', default='localhost:2181',
               help='Zookeeper host with port in format zookeeper.host:2181')
-def epos(cpus, mem, docker, uris, mesos_master, marathon_host, chronos_host,
-         zookeeper_host):
+def epos(cpus, mem, docker, force_pull, uris, mesos_master, marathon_host,
+         chronos_host, zookeeper_host):
     """Epos
 
     DAG Workflows like epic poems via Mesos, Marathon, Chronos, Spark, Dask
@@ -42,6 +45,7 @@ def epos(cpus, mem, docker, uris, mesos_master, marathon_host, chronos_host,
     commons = {'cpus': cpus,
                'mem': int(float(mem[:-1]) * units[mem[-1]]) if mem else None,
                'docker': docker,
+               'force_pull': force_pull,
                'uris': uris}
     commons = {k: v for k, v in commons.items() if v}
 
