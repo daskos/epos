@@ -9,7 +9,8 @@ RUN pip install cloudpickle && \
 RUN pip install pywebhdfs pymongo sqlalchemy paramiko cassandra-driver pykafka requests odo toolz
 ADD . /epos
 
-RUN pip install git+https://github.com/lensacom/dask.mesos git+https://github.com/lensacom/satyr
+RUN pip install git+https://github.com/lensacom/satyr
+RUN pip install git+https://github.com/lensacom/dask.mesos
 RUN pip install -e /epos[complete]
 
 ENV PYTHONPATH /spark/python:/spark/python/lib/py4j-0.10.1-src.zip

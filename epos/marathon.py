@@ -50,7 +50,8 @@ def marathon(fn, name=None, cpus=0.1, mem=128, instances=1,
             'uris': list(uris)
         }
         if docker:
-            payload['container'] = {'docker': {'image': str(docker)}}
+            payload['container'] = {'docker': {'image': str(docker),
+                                               'forcePullImage': True}}
             if volumes:
                 payload['container']['volumes'] = _parse_volumes(volumes)
 
