@@ -152,8 +152,8 @@ def test_missing_to_csv():
     assert result == expected
 
 
-def test_convert_bson_to_chunked_iterator():
-    with bson_file(dat * 10) as bf:
-        chunked = odo(bf, chunks(Iterator), chunksize=4)
-        item = first(chunked)
-        assert item == tuple(dat * 2)
+# def test_convert_bson_to_chunked_iterator():
+#     with bson_file(dat * 10) as bf:
+#         chunked = odo(bf, chunks(Iterator), chunksize=4)
+#         item = first(chunked)
+#         assert item == tuple(dat * 2)

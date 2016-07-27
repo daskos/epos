@@ -20,7 +20,7 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix='EPOS')
 @click.option('--docker', default='lensa/epos',
               help=('Default docker images used by mesos, marathon and chronos'
                     'jobs'))
-@click.option('--force-pull', type=bool, default=False,
+@click.option('--force-pull', is_flag=True,
               help=('Dorce pull docker images used by mesos, marathon and '
                     'chronos jobs'))
 @click.option('--uris', '-u', multiple=True,
