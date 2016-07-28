@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import uuid
 from odo import JSONLines, Temp, convert, append
 from collections import Iterator
 
