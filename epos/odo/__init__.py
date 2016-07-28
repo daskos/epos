@@ -4,6 +4,7 @@ from odo import odo, resource, convert, chunks, append
 from odo.utils import ignoring
 
 from .core import Iterator
+from .json import JSONLines
 
 with ignoring(ImportError):
     from .bson import BSON
