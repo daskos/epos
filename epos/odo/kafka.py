@@ -2,12 +2,15 @@ from __future__ import absolute_import, division, print_function
 
 import re
 import json
+import inspect
+
 from six import wraps
 from toolz import curry
+
 from collections import Iterator
 from odo import resource, append, convert
 
-from pykafka import KafkaClient
+from pykafka import KafkaClient, Producer, SimpleConsumer
 
 
 class Kafka(object):
@@ -31,23 +34,6 @@ class Kafka(object):
         self.topic = self.client.topics[topic]
 
 
-simple_consumer_args = ('topic', 'cluster', 'consumer_group', 'partitions',
-                        'fetch_message_max_bytes', 'num_consumer_fetchers',
-                        'auto_commit_enable', 'auto_commit_interval_ms',
-                        'queued_max_messages', 'fetch_min_bytes',
-                        'fetch_wait_max_ms', 'offsets_channel_backoff_ms',
-                        'offsets_commit_max_retries', 'auto_offset_reset',
-                        'consumer_timeout_ms', 'auto_start',
-                        'reset_offset_on_start', 'compacted_topic',
-                        'generation_id', 'consumer_id')
-
-producer_args = ('cluster', 'topic', 'partitioner', 'compression',
-                 'max_retries', 'retry_backoff_ms', 'required_acks',
-                 'ack_timeout_ms', 'max_queued_messages',
-                 'min_queued_messages', 'linger_ms', 'block_on_queue_full',
-                 'max_request_size', 'sync', 'delivery_reports',
-                 'auto_start')
-
 
 @curry
 def filter_kwargs(fn, available_kwargs=()):
@@ -59,11 +45,13 @@ def filter_kwargs(fn, available_kwargs=()):
     return wrapper
 
 
+simple_consumer_args = inspect.getargspec(SimpleConsumer.__init__)[0]
 simple_consumer = filter_kwargs(
-    available_kwargs=simple_consumer_args+('dshape', 'loads', 'kafka'))
+    available_kwargs=simple_consumer_args+['dshape', 'loads', 'kafka'])
 
+producer_args = inspect.getargspec(Producer.__init__)[0]
 producer = filter_kwargs(
-    available_kwargs=producer_args+('dshape', 'dumps', 'kafka'))
+    available_kwargs=producer_args+['dshape', 'dumps', 'kafka'])
 
 
 @resource.register('kafka://.*')

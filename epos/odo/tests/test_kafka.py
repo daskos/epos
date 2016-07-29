@@ -72,8 +72,8 @@ def test_kafka_with_iterator(kafka):
     assert list(result) == range(10)
 
 
-def test_create_connection(mocker):
-    pconn = create_connection(available_kwargs=('x', 'y', 'z'))
+def test_filter_kwargs(mocker):
+    pconn = filter_kwargs(available_kwargs=('x', 'y', 'z'))
 
     fn = mocker.Mock()
     fn.__name__ = 'wrapped'
