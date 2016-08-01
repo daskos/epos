@@ -2,10 +2,15 @@ from __future__ import absolute_import, division, print_function
 
 import re
 import json
+import inspect
+
+from six import wraps
+from toolz import curry
+
 from collections import Iterator
 from odo import resource, append, convert
 
-from pykafka import KafkaClient
+from pykafka import KafkaClient, Producer, SimpleConsumer
 
 
 class Kafka(object):
@@ -29,6 +34,26 @@ class Kafka(object):
         self.topic = self.client.topics[topic]
 
 
+
+@curry
+def filter_kwargs(fn, available_kwargs=()):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        d = {k: v for k, v in kwargs.items() if k in available_kwargs}
+        return fn(*args, **d)
+
+    return wrapper
+
+
+simple_consumer_args = inspect.getargspec(SimpleConsumer.__init__)[0]
+simple_consumer = filter_kwargs(
+    available_kwargs=simple_consumer_args+['dshape', 'loads', 'kafka'])
+
+producer_args = inspect.getargspec(Producer.__init__)[0]
+producer = filter_kwargs(
+    available_kwargs=producer_args+['dshape', 'dumps', 'kafka'])
+
+
 @resource.register('kafka://.*')
 def resource_kafka(uri, kafka=None, **kwargs):
     pattern = r'kafka://(?P<host>[\w.-]*)?(:(?P<port>\d+))?/(?P<topic>[^\/]+)$'
@@ -38,16 +63,15 @@ def resource_kafka(uri, kafka=None, **kwargs):
 
 
 @convert.register(Iterator, Kafka)
+@simple_consumer
 def kafka_to_iterator(dst, dshape=None, loads=json.loads, kafka=None, **kwargs):
-    kwargs.pop('excluded_edges', None)
-    kwargs.pop('chunksize', None)
-    # consumer = dst.topic.get_balanced_consumer(**kwargs)
     consumer = dst.topic.get_simple_consumer(**kwargs)
     for message in consumer:
         yield loads(message.value)
 
 
 @append.register(Kafka, (list, Iterator))
+@producer
 def append_iterator_to_kafka(dst, src, dshape=None, dumps=json.dumps,
                              kafka=None, **kwargs):
     with dst.topic.get_producer(**kwargs) as producer:
@@ -57,6 +81,7 @@ def append_iterator_to_kafka(dst, src, dshape=None, dumps=json.dumps,
 
 
 @append.register(Kafka, object)  # anything else
+@producer
 def append_object_to_kafka(dst, src, dshape=None, dumps=json.dumps,
                            kafka=None, **kwargs):
     with dst.topic.get_producer(**kwargs) as producer:

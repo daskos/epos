@@ -13,6 +13,8 @@ kafka = pytest.importorskip('pykafka')
 from pykafka import KafkaClient
 from pykafka.topic import Topic
 
+from ..kafka import filter_kwargs, simple_consumer, producer
+
 
 kafka_host = os.environ.get('KAFKA_HOST')
 
@@ -68,3 +70,31 @@ def test_kafka_with_iterator(kafka):
 
     assert isinstance(result, Iterator)
     assert list(result) == range(10)
+
+
+def test_filter_kwargs(mocker):
+    pconn = filter_kwargs(available_kwargs=('x', 'y', 'z'))
+
+    fn = mocker.Mock()
+    fn.__name__ = 'wrapped'
+    conn = pconn(fn)
+
+    conn(1, 2, x=1, y=2, i=0)
+    fn.assert_called_with(1, 2, x=1, y=2)
+
+
+def run_for_kafka_conns(mocker, pconn):
+    fn = mocker.Mock()
+    fn.__name__ = 'wrapped'
+    conn = pconn(fn)
+
+    conn(shit=1, topic='channel', dshape='var * {}')
+    fn.assert_called_with(topic='channel', dshape='var * {}')
+
+
+def test_simple_consumer(mocker):
+    run_for_kafka_conns(mocker, simple_consumer())
+
+
+def test_producer(mocker):
+    run_for_kafka_conns(mocker, producer())
